@@ -1,16 +1,24 @@
+import com.google.protobuf.gradle.*
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+
+    // GRPC
+    id("com.google.protobuf")
+
+    //    Google Cloud Storage
+    id("com.google.gms.google-services")
 }
 
 android {
     namespace = "com.topibatu.tanilink"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.topibatu.tanilink"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -44,14 +52,50 @@ android {
     }
     packaging {
         resources {
-            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+            excludes += "/META-INF/*"
+        }
+    }
+}
+
+protobuf {
+    protoc {
+        artifact = "com.google.protobuf:protoc:3.24.4"
+    }
+    plugins {
+        create("java") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.59.0"
+        }
+        create("grpc") {
+            artifact = "io.grpc:protoc-gen-grpc-java:1.59.0"
+        }
+        create("grpckt") {
+            artifact = "io.grpc:protoc-gen-grpc-kotlin:1.4.0:jdk8@jar"
+        }
+    }
+    generateProtoTasks {
+        all().forEach {
+            it.plugins {
+                create("java") {
+                    option("lite")
+                }
+                create("grpc") {
+                    option("lite")
+                }
+                create("grpckt") {
+                    option("lite")
+                }
+            }
+            it.builtins {
+                create("kotlin") {
+                    option("lite")
+                }
+            }
         }
     }
 }
 
 dependencies {
-
-    implementation("androidx.core:core-ktx:1.9.0")
+    implementation("androidx.core:core-ktx:1.12.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.6.2")
     implementation("androidx.activity:activity-compose:1.8.0")
     implementation(platform("androidx.compose:compose-bom:2023.03.00"))
@@ -66,4 +110,26 @@ dependencies {
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")
     debugImplementation("androidx.compose.ui:ui-tooling")
     debugImplementation("androidx.compose.ui:ui-test-manifest")
+
+    //  GRPC dependencies
+    implementation("io.grpc:grpc-netty:1.59.0")
+    implementation("io.grpc:grpc-protobuf:1.59.0")
+    implementation("io.grpc:grpc-stub:1.59.0")
+    implementation("io.grpc:grpc-kotlin-stub:1.4.0")
+    implementation("com.google.protobuf:protobuf-kotlin:3.24.4")
+    implementation("com.google.protobuf:protobuf-java:3.24.4")
+    implementation("com.google.protobuf:protobuf-java-util:3.24.4")
+    implementation("com.google.protobuf:protobuf-gradle-plugin:0.9.4")
+
+//    WebSocket
+    implementation("com.microsoft.signalr:signalr:7.0.0-preview.6.22330.3")
+
+//    Google Cloud Storage
+    implementation(platform("com.google.firebase:firebase-bom:32.5.0"))
+    implementation("com.google.firebase:firebase-storage-ktx")
+    implementation("com.google.firebase:firebase-analytics-ktx")
+    implementation("io.coil-kt:coil-compose:2.4.0") // For loading and displaying images
+
+//    others
+    implementation("androidx.navigation:navigation-compose:2.7.5")
 }

@@ -1,1 +1,5 @@
-/build
+/build/*
+google-services.json
+
+!/build/outputs/**/*
+
