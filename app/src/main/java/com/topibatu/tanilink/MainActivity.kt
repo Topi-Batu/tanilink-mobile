@@ -1,5 +1,6 @@
 package com.topibatu.tanilink
 
+import android.gesture.Prediction
 import android.graphics.ColorSpace
 import android.os.Bundle
 import androidx.activity.ComponentActivity
@@ -24,6 +25,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.key.Key.Companion.Home
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,7 +36,9 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import coil.compose.rememberImagePainter
+import com.topibatu.tanilink.View.Home
 import com.topibatu.tanilink.View.LoginPage
+import com.topibatu.tanilink.View.Prediction
 import com.topibatu.tanilink.View.RegisterPage
 import com.topibatu.tanilink.ui.theme.TanilinkTheme
 
@@ -51,27 +55,16 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
-                Scaffold(
-                    topBar = {
-                        when(currentRoute) {
-                            "login", "sign_up" -> null
-                            else -> {
-                                TopAppBar(
-                                    title = { Text("Tani Link") },
-                                    colors = TopAppBarDefaults.mediumTopAppBarColors(
-                                        // FIX: color scheme
-                                        containerColor = MaterialTheme.colorScheme.primary
-                                    )
-                                )
-                            }
-                        }
-                    }
-                ) { padding ->
-                    NavHost(navController = navController, startDestination = "login") {
-                        composable("login") { LoginPage(navController = navController) }
-                        composable("sign_up") { RegisterPage(navController = navController) }
-                    }
+//                NavHost(navController = navController, startDestination = "login") {
+//                    composable("login") { LoginPage(navController = navController) }
+//                    composable("sign_up") { RegisterPage(navController = navController) }
+//                }
+
+                NavHost(navController = navController, startDestination = "prediction") {
+                    composable("home") { Home(navController = navController) }
+//                    composable("prediction") { Prediction(navController = navController) }
                 }
+
             }
         }
     }
