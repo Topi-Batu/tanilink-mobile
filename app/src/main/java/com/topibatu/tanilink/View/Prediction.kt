@@ -1,8 +1,9 @@
 package com.topibatu.tanilink.View
 
-import android.graphics.Point
+import androidx.compose.runtime.Composable
 import androidx.navigation.NavController
 
-fun Prediction(navController: NavController) {
+@Composable
+fun PredictionPage(navController: NavController) {
     // Cari graph visualizer
 }

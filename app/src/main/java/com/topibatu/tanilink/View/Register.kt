@@ -1,5 +1,8 @@
 package com.topibatu.tanilink.View
 
+import android.annotation.SuppressLint
+import android.net.Uri
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -22,6 +25,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +36,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -38,11 +47,22 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.topibatu.tanilink.R
+import com.topibatu.tanilink.Util.Account
+import kotlinx.coroutines.launch
 
+@SuppressLint("RememberReturnType")
 @ExperimentalMaterial3Api
 @Composable
 fun RegisterPage(navController: NavController) {
     // TODO: change button color, get textfield state value, navigation from register -> login viceversa
+    val accountRPC = remember { Account() }
+    val scope = rememberCoroutineScope()
+
+    val nameState = remember { mutableStateOf(TextFieldValue()) }
+    val emailState = remember { mutableStateOf(TextFieldValue()) }
+    val passwordState = remember { mutableStateOf(TextFieldValue()) }
+
+    val registerRes = remember { mutableStateOf<account_proto.Account.RegisterRes?>(null) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -52,21 +72,58 @@ fun RegisterPage(navController: NavController) {
         // Title
         Text(text = "Sign Up", fontSize = 24.sp, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
-        
+
         // Text Field
-        OutlinedTextField(value = "Username", onValueChange = {})
+        OutlinedTextField(
+            value = nameState.value,
+            placeholder = { Text("Full Name") },
+            onValueChange = {
+                nameState.value = it
+            })
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(value = "Email", onValueChange = {})
+        OutlinedTextField(
+            value = emailState.value,
+            placeholder = { Text("Email") },
+            onValueChange = {
+                emailState.value = it
+            })
         Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(value = "Password", onValueChange = {})
+        OutlinedTextField(
+            value = passwordState.value,
+            placeholder = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            onValueChange = {
+                passwordState.value = it
+            })
         Spacer(modifier = Modifier.height(8.dp))
-        
+
         // Button
-        Button(onClick = { }) {
+        Button(onClick = {
+            // TODO: Request ke backend
+            scope.launch {
+                registerRes.value = accountRPC.register(
+                    name = nameState.value.toString(),
+                    email = emailState.value.toString(),
+                    password = passwordState.value.toString()
+                )
+            }
+
+            Log.d("TEST", "TESTTTT")
+
+            // kalau berhasil
+//            navController.navigate("login")
+
+        }) {
             Text(text = "Register")
         }
+
+        registerRes.value?.let { response ->
+            Text("Server Response: ", modifier = Modifier.padding(top = 10.dp))
+            Text("Status: ${response.account.id}")
+        }
+
     }
 
     BoxWithConstraints(

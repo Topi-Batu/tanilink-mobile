@@ -1,6 +1,7 @@
 package com.topibatu.tanilink.View
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -16,12 +17,17 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -31,6 +37,9 @@ import coil.compose.rememberAsyncImagePainter
 @Composable
 fun LoginPage(navController: NavController) {
     // TODO: change button color, get textfield state value, navigation from register -> login viceversa
+    val emailState = remember { mutableStateOf(TextFieldValue()) }
+    val passwordState = remember { mutableStateOf(TextFieldValue()) }
+
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -42,16 +51,43 @@ fun LoginPage(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Text Field
-        OutlinedTextField(value = "Username", onValueChange = {})
+        OutlinedTextField(
+            value = emailState.value,
+            placeholder = { Text("Email") },
+            onValueChange = {
+                emailState.value = it
+            })
         Spacer(modifier = Modifier.height(16.dp))
 
-        OutlinedTextField(value = "Password", onValueChange = {})
+        OutlinedTextField(
+            value = passwordState.value,
+            placeholder = { Text("Password") },
+            visualTransformation = PasswordVisualTransformation(),
+            onValueChange = {
+                passwordState.value = it
+            })
         Spacer(modifier = Modifier.height(16.dp))
 
         // Button
-        Button(onClick = { }) {
+        Button(onClick = {
+            // TODO: Request ke backend
+
+            // Kalau berhasil login
+            navController.navigate("main")
+        }) {
             Text(text = "Login")
         }
+
+        // Don't have an Acocunt?
+        Spacer(modifier = Modifier.height(32.dp))
+        Text(
+            text = "Don't Have an Account?",
+            color = Color.Gray,
+            modifier = Modifier
+                .clickable {
+                    navController.navigate("sign_up")
+                }
+        )
     }
 
     BoxWithConstraints(
