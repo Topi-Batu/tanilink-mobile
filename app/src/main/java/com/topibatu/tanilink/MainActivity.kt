@@ -11,10 +11,13 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
+import com.topibatu.tanilink.View.CategoryListPage
 import com.topibatu.tanilink.View.ChatPage
 import com.topibatu.tanilink.View.HomePage
 import com.topibatu.tanilink.View.LoginPage
 import com.topibatu.tanilink.View.PredictionPage
+import com.topibatu.tanilink.View.ProductDetailPage
+import com.topibatu.tanilink.View.ProfilePage
 import com.topibatu.tanilink.View.RegisterPage
 import com.topibatu.tanilink.ui.theme.TanilinkTheme
 
@@ -37,12 +40,15 @@ class MainActivity : ComponentActivity() {
                         composable("sign_up") { RegisterPage(navController = navController) }
                     }
 
-                    navigation(startDestination = "chat", route = "main"){
+                    navigation(startDestination = "product_detail", route = "main"){
                         composable("home") { HomePage(navController = navController) }
 //                        composable("product") { ProductDetailPage(navController = navController) }
 //                        composable("cart") { CartPage(navController = navController) }
                         composable("prediction") { PredictionPage(navController = navController) }
                         composable("chat") { ChatPage(navController = navController)}
+                        composable("profile"){ ProfilePage(navController = navController)}
+                        composable("category_list"){ CategoryListPage(navController = navController)}
+                        composable("product_detail"){ ProductDetailPage(navController = navController)}
                     }
                 }
             }
