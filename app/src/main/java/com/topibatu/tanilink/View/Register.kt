@@ -3,6 +3,7 @@ package com.topibatu.tanilink.View
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -25,6 +26,7 @@ import androidx.compose.material3.TextField
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -33,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -48,6 +51,7 @@ import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import com.topibatu.tanilink.R
 import com.topibatu.tanilink.Util.Account
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @SuppressLint("RememberReturnType")
@@ -62,6 +66,7 @@ fun RegisterPage(navController: NavController) {
     val emailState = remember { mutableStateOf(TextFieldValue()) }
     val passwordState = remember { mutableStateOf(TextFieldValue()) }
 
+    val context = LocalContext.current
     val registerRes = remember { mutableStateOf<account_proto.Account.RegisterRes?>(null) }
 
     Column(
@@ -101,27 +106,35 @@ fun RegisterPage(navController: NavController) {
 
         // Button
         Button(onClick = {
-            // TODO: Request ke backend
             scope.launch {
-                registerRes.value = accountRPC.register(
-                    name = nameState.value.toString(),
-                    email = emailState.value.toString(),
-                    password = passwordState.value.toString()
-                )
+
+                registerRes.value = try {
+                    accountRPC.register(
+                        name = nameState.value.text,
+                        email = emailState.value.text,
+                        password = passwordState.value.text
+                    )
+
+
+                } catch (e: Exception) {
+                    Toast.makeText( context, "Registration failed: ${e.message}", Toast.LENGTH_SHORT).show()
+                    null
+                }
             }
-
-            Log.d("TEST", "TESTTTT")
-
-            // kalau berhasil
-//            navController.navigate("login")
 
         }) {
             Text(text = "Register")
         }
 
+        // If Register Success
         registerRes.value?.let { response ->
-            Text("Server Response: ", modifier = Modifier.padding(top = 10.dp))
-            Text("Status: ${response.account.id}")
+            Text("Check Your Email Address Box", modifier = Modifier.padding(top = 10.dp))
+            Text("User-ID: ${response.account.id}")
+
+            LaunchedEffect(response) {
+                delay(2500) // Delay for 2 seconds
+                navController.navigate("login")
+            }
         }
 
     }

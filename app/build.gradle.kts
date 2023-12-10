@@ -116,10 +116,12 @@ dependencies {
     implementation("io.grpc:grpc-protobuf:1.59.0")
     implementation("io.grpc:grpc-stub:1.59.0")
     implementation("io.grpc:grpc-kotlin-stub:1.4.0")
+    implementation("io.grpc:grpc-okhttp:1.59.0")
     implementation("com.google.protobuf:protobuf-kotlin:3.24.4")
     implementation("com.google.protobuf:protobuf-java:3.24.4")
     implementation("com.google.protobuf:protobuf-java-util:3.24.4")
     implementation("com.google.protobuf:protobuf-gradle-plugin:0.9.4")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
 
 //    WebSocket
     implementation("com.microsoft.signalr:signalr:7.0.0-preview.6.22330.3")

@@ -1,29 +1,31 @@
 package com.topibatu.tanilink.Util
 
+import account_proto.Account.LoginReq
+import account_proto.Account.LoginRes
 import account_proto.Account.RegisterReq
 import account_proto.Account.RegisterRes
 import account_proto.AccountsGrpcKt
 import android.net.Uri
 import io.grpc.ManagedChannelBuilder
+import io.grpc.okhttp.OkHttpChannelBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.asExecutor
+import okhttp3.OkHttp
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
 
 
 class Account() {
-    private val channel = let {
-        val uri: Uri = Uri.parse("http://tanilink.bantuin.me:443")
+    val uri: Uri = Uri.parse("http://tanilink.bantuin.me:443")
 
-        println("Connecting to ${uri.host}:${uri.port}")
+    val okHttpClient = OkHttpClient.Builder()
+        .protocols(listOf(Protocol.H2_PRIOR_KNOWLEDGE))
+        // Add any additional OkHttpClient configurations here
+        .build()
 
-        val builder = ManagedChannelBuilder.forAddress(uri.host, uri.port)
-        if (uri.scheme == "https") {
-            builder.useTransportSecurity()
-        } else {
-            builder.usePlaintext()
-        }
-
-        builder.executor(Dispatchers.IO.asExecutor()).build()
-    }
+    val channel = OkHttpChannelBuilder.forAddress(uri.host, uri.port)
+        .transportExecutor(okHttpClient.dispatcher.executorService)
+        .build()
 
     private val account = AccountsGrpcKt.AccountsCoroutineStub(channel)
 
@@ -35,6 +37,20 @@ class Account() {
                 .setPassword(password)
                 .build()
             val response = account.register(request)
+            return response
+        } catch (e: Exception) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun login(email: String, password: String): LoginRes {
+        try {
+            val request = LoginReq.newBuilder()
+                .setEmail(email)
+                .setPassword(password)
+                .build()
+            val response = account.login(request)
             return response
         } catch (e: Exception) {
             e.printStackTrace()
