@@ -75,7 +75,7 @@ private fun TopBar(navController: NavController) {
     ) {
         // back Icon
         Icon(Icons.Filled.ArrowBack, "Back", modifier = Modifier.size(38.dp).clickable {
-            navController.popBackStack("main", false)
+            navController.popBackStack()
         })
 
         // Images
@@ -96,6 +96,7 @@ private fun TopBar(navController: NavController) {
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BottomBar() {
     Row(

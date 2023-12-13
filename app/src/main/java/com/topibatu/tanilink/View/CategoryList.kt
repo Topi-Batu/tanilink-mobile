@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalMaterial3Api::class)
+
 package com.topibatu.tanilink.View
 
 import android.annotation.SuppressLint
@@ -17,6 +19,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -30,18 +33,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.topibatu.tanilink.View.components.TopBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun CategoryListPage(navController: NavController){
     Scaffold (
         topBar = {
-            TopBar(navController)
+            TopBar(navController, "Category List")
         },
     ){
         LazyColumn(modifier = Modifier.padding(top = 62.dp)) {
             items(10) {
-                Row(modifier = Modifier.padding(top = 10.dp, start = 24.dp, end = 24.dp)) {
+                Row(
+                    modifier = Modifier
+                        .padding(top = 10.dp, start = 24.dp, end = 24.dp)
+                        .clickable {
+                            navController.navigate("product_detail")
+                        }
+                ) {
                     Image(
                         painter = rememberAsyncImagePainter("https://assetsio.reedpopcdn.com/hu-tao-genshin.jpg?width=1200&height=1200&fit=crop&quality=100&format=png&enable=upscale&auto=webp"),
                         contentDescription = "avatar",
@@ -66,24 +76,4 @@ fun CategoryListPage(navController: NavController){
     }
 }
 
-@Composable
-private fun TopBar(navController: NavController) {
-    Row(
-        modifier = Modifier
-            .padding(all = 16.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // back Icon
-        Icon(
-            Icons.Filled.ArrowBack, "Back", modifier = Modifier
-                .size(38.dp)
-                .clickable {
-                    navController.popBackStack("main", false)
-                })
-        // Name
-        Spacer(modifier = Modifier.width(24.dp))
-        Text("Category List", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-    }
-}
 

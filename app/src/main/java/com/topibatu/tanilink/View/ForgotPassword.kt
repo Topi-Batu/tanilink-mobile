@@ -1,16 +1,16 @@
 package com.topibatu.tanilink.View
 
-import android.annotation.SuppressLint
-import android.net.Uri
-import android.util.Log
+import account_proto.Account
 import android.widget.Toast
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -20,11 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
@@ -37,39 +33,30 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
-import com.topibatu.tanilink.R
-import com.topibatu.tanilink.Util.Account
+import com.orhanobut.hawk.Hawk
 import io.grpc.StatusException
-import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-@SuppressLint("RememberReturnType")
-@ExperimentalMaterial3Api
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RegisterPage(navController: NavController) {
+fun ForgotPassword(navController: NavController) {
     // TODO: change button color, get textfield state value, navigation from register -> login viceversa
-    val accountRPC = remember { Account() }
-    val scope = rememberCoroutineScope()
+//    val accountRPC = remember { com.topibatu.tanilink.Util.Account() }
+//    val scope = rememberCoroutineScope()
 
-    val nameState = remember { mutableStateOf(TextFieldValue()) }
     val emailState = remember { mutableStateOf(TextFieldValue()) }
-    val passwordState = remember { mutableStateOf(TextFieldValue()) }
 
-    val context = LocalContext.current
-    val registerRes = remember { mutableStateOf<account_proto.Account.RegisterRes?>(null) }
+//    val context = LocalContext.current
+//    val loginRes = remember { mutableStateOf<Account.LoginRes?>(null) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -77,67 +64,62 @@ fun RegisterPage(navController: NavController) {
         Alignment.CenterHorizontally
     ) {
         // Title
-        Text(text = "Sign Up", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "Forgot Password", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(2.dp))
+
+        // Description
+        Column (
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Please enter your email address to", fontSize = 15.sp)
+            Text(text = "receive verification code", fontSize = 15.sp)
+        }
+        Spacer(modifier = Modifier.height(42.dp))
 
         // Text Field
-        OutlinedTextField(
-            value = nameState.value,
-            placeholder = { Text("Full Name") },
-            onValueChange = {
-                nameState.value = it
-            })
-        Spacer(modifier = Modifier.height(8.dp))
-
         OutlinedTextField(
             value = emailState.value,
             placeholder = { Text("Email") },
             onValueChange = {
                 emailState.value = it
             })
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = passwordState.value,
-            placeholder = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            onValueChange = {
-                passwordState.value = it
-            })
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(16.dp))
 
         // Button
         Button(onClick = {
-            scope.launch {
-
-                registerRes.value = try {
-                    accountRPC.register(
-                        name = nameState.value.text,
-                        email = emailState.value.text,
-                        password = passwordState.value.text
-                    )
-
-
-                } catch (e: StatusException) {
-                    Toast.makeText( context, "Registration failed: ${e.status.description}", Toast.LENGTH_SHORT).show()
-                    null
-                }
-            }
-
+//            scope.launch {
+//
+//                loginRes.value = try {
+//                    accountRPC.login(
+//                        email = emailState.value.text,
+//                        password = passwordState.value.text
+//                    )
+//                } catch (e: StatusException) {
+//                    Toast.makeText(
+//                        context,
+//                        "Login failed: ${e.status.description}",
+//                        Toast.LENGTH_SHORT
+//                    ).show()
+//                    null
+//                }
+//            }
         }) {
-            Text(text = "Register")
+            Text(text = "Send")
         }
 
-        // If Register Success
-        registerRes.value?.let { response ->
-            Text("Check Your Email Address Box", modifier = Modifier.padding(top = 10.dp))
-
-            LaunchedEffect(response) {
-                delay(2500) // Delay for 2 seconds
-                navController.navigate("login")
-            }
-        }
-
+        // If Login Success
+//        loginRes.value?.let { response ->
+//            Text("Login Success", modifier = Modifier.padding(top = 10.dp))
+//
+//            // Save Session
+//            Hawk.put("user-id", response.account.id);
+//            Hawk.put("access-token", response.tokens.accessToken);
+//
+//            LaunchedEffect(response) {
+//                delay(2500) // Delay for 2 seconds
+//                navController.navigate("home")
+//            }
+//        }
     }
 
     BoxWithConstraints(
@@ -149,7 +131,7 @@ fun RegisterPage(navController: NavController) {
 
         // Top Right Image
         Image(
-            painter = rememberAsyncImagePainter("https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fdaun_register.png?alt=media&token=afae7d2b-068c-4bcd-850c-9bbd9089783b"),
+            painter = rememberAsyncImagePainter("https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fdaun_forget_password.png?alt=media&token=aee0277e-e8ad-4104-8ab1-04f0705c93e1"),
             contentDescription = null,
             modifier = Modifier
                 .size(200.dp)
@@ -160,7 +142,7 @@ fun RegisterPage(navController: NavController) {
 
         // Bottom Left Image
         Image(
-            painter = rememberAsyncImagePainter("https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fdaun_register.png?alt=media&token=afae7d2b-068c-4bcd-850c-9bbd9089783b"),
+            painter = rememberAsyncImagePainter("https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fdaun_forget_password.png?alt=media&token=aee0277e-e8ad-4104-8ab1-04f0705c93e1"),
             contentDescription = null,
             modifier = Modifier
                 .size(200.dp)

@@ -6,8 +6,10 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -33,13 +35,18 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.orhanobut.hawk.Hawk
 import com.topibatu.tanilink.Util.Account
+import io.grpc.StatusException
+import io.grpc.StatusRuntimeException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -79,42 +86,74 @@ fun LoginPage(navController: NavController) {
             onValueChange = {
                 passwordState.value = it
             })
+        Spacer(modifier = Modifier.height(12.dp))
+
+        // Forget Password
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 40.dp),
+            horizontalArrangement = Arrangement.End,
+        ) {
+            Text(
+                text = "Forget Password?",
+                modifier = Modifier.clickable {
+                    navController.navigate("forgot_password")
+                }
+            )
+        }
         Spacer(modifier = Modifier.height(16.dp))
 
         // Button
         Button(onClick = {
             scope.launch {
 
-            loginRes.value = try {
-                accountRPC.login(
-                    email = emailState.value.text,
-                    password = passwordState.value.text
-                )
-            } catch (e: Exception) {
-                Toast.makeText( context, "Login failed: ${e.message}", Toast.LENGTH_SHORT).show()
-                null
+                loginRes.value = try {
+                    accountRPC.login(
+                        email = emailState.value.text,
+                        password = passwordState.value.text
+                    )
+                } catch (e: StatusException) {
+                    Toast.makeText(
+                        context,
+                        "Login failed: ${e.status.description}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    null
+                }
             }
-        }
         }) {
             Text(text = "Login")
         }
 
         // Don't have an Acocunt?
         Spacer(modifier = Modifier.height(32.dp))
-        Text(
-            text = "Don't Have an Account?",
-            color = Color.Gray,
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
             modifier = Modifier
                 .clickable {
                     navController.navigate("sign_up")
                 }
-        )
+        ) {
+            Text(
+                text = "Don't Have an Account?",
+                color = Color.Gray,
+            )
+            Text(
+                text = "Sign Up",
+                color = Color.Gray,
+                textDecoration = TextDecoration.Underline
+            )
+        }
+
 
         // If Login Success
         loginRes.value?.let { response ->
             Text("Login Success", modifier = Modifier.padding(top = 10.dp))
-            Text("User-ID: ${response.account.id}")
-            Text("Token: ${response.tokens.accessToken}")
+
+            // Save Session
+            Hawk.put("user-id", response.account.id);
+            Hawk.put("access-token", response.tokens.accessToken);
 
             LaunchedEffect(response) {
                 delay(2500) // Delay for 2 seconds

@@ -16,7 +16,10 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -34,16 +37,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
-
+import com.topibatu.tanilink.View.components.BottomBar
+import com.topibatu.tanilink.View.components.TopBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfilePage(navController: NavController) {
     Scaffold(
         topBar = {
-            TopBar(navController)
+            TopBar(navController, "Profile")
         },
+        bottomBar = {
+            BottomBar(navController, 3)
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {  },
+            ) {
+                // TODO: toggle edit and save icon
+                Icon(Icons.Filled.Edit, "Edit Profile")
+            }
+        }
     ) {
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -61,10 +77,8 @@ fun ProfilePage(navController: NavController) {
             )
             Spacer(modifier = Modifier.height(16.dp))
             OutlinedTextField(
-                value = "",
+                value = "Email",
                 onValueChange = {},
-                label = { Text("Email") },
-                visualTransformation = VisualTransformation.None,
                 readOnly = true,
                 shape = RoundedCornerShape(32.dp),
                 modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp * 0.75f)
@@ -93,27 +107,9 @@ fun ProfilePage(navController: NavController) {
                 shape = RoundedCornerShape(32.dp),
                 modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp * 0.75f)
             )
+
         }
     }
 }
 
-@Composable
-private fun TopBar(navController: NavController) {
-    Row(
-        modifier = Modifier
-            .padding(all = 16.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // back Icon
-        Icon(Icons.Filled.ArrowBack, "Back", modifier = Modifier
-            .size(38.dp)
-            .clickable {
-                navController.popBackStack("main", false)
-            })
-        // Name
-        Spacer(modifier = Modifier.width(24.dp))
-        Text("Profile", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-    }
-}
 

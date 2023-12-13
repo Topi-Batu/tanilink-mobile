@@ -39,16 +39,18 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.topibatu.tanilink.View.components.BottomBar
+import com.topibatu.tanilink.View.components.TopBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProductDetailPage(navController: NavController) {
     Scaffold(
         topBar = {
-            TopBar(navController)
+            TopBar(navController = navController, "Product Detail")
         },
         bottomBar = {
-            BottomBar()
+            BottomBar(navController, -1)
         }
     ) {
         Column(
@@ -94,48 +96,4 @@ fun ProductDetailPage(navController: NavController) {
     }
 }
 
-@Composable
-private fun TopBar(navController: NavController) {
-    Row(
-        modifier = Modifier
-            .padding(all = 16.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        // back Icon
-        Icon(
-            Icons.Filled.ArrowBack, "Back", modifier = Modifier
-                .size(38.dp)
-                .clickable {
-                    navController.popBackStack("main", false)
-                })
-        // Name
-        Spacer(modifier = Modifier.width(24.dp))
-        Text("Product Detail", fontWeight = FontWeight.Bold, fontSize = 24.sp)
-    }
-}
-
-@Composable
-private fun BottomBar() {
-    data class NavigationItem(
-        val text: String,
-        val icon: ImageVector
-    )
-    var selectedItem by remember { mutableIntStateOf(0) }
-    val items = listOf(
-        NavigationItem("Home", Icons.Filled.Home),
-        NavigationItem("Chat", Icons.Filled.Email),
-        NavigationItem("Profile", Icons.Filled.Person)
-    )
-    NavigationBar {
-        items.forEachIndexed { index, item ->
-            NavigationBarItem(
-                icon = { Icon(item.icon, contentDescription = item.text) },
-                label = { Text(item.text) },
-                selected = selectedItem == index,
-                onClick = { selectedItem = index }
-            )
-        }
-    }
-}
 

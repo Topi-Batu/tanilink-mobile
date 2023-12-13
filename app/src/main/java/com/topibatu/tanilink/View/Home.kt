@@ -1,6 +1,7 @@
 package com.topibatu.tanilink.View
 
 import android.annotation.SuppressLint
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -50,9 +51,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.orhanobut.hawk.Hawk
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.material3.IconButton as IconButton
+import com.topibatu.tanilink.View.components.BottomBar
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
@@ -65,13 +68,12 @@ fun HomePage(navController: NavController) {
             TopBar()
         },
         bottomBar = {
-            BottomBar()
+            BottomBar(navController, 0)
         }
     ) {
         val images = listOf(
             "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner1.png?alt=media&token=985a3e0b-8773-4c84-afae-bcd7c01e695d",
             "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner2.png?alt=media&token=7dfaf44f-225b-41c0-9c46-aa3f267d561d",
-            "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner3.png?alt=media&token=70e0d942-b816-45ab-9f72-21417d0b9829",
             "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner3.png?alt=media&token=70e0d942-b816-45ab-9f72-21417d0b9829",
         )
 
@@ -99,7 +101,7 @@ fun HomePage(navController: NavController) {
             // Special Product
             Spacer(modifier = Modifier.height(18.dp))
             Text(
-                text = "Special Product",
+                text = "Commodities",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )
@@ -112,33 +114,11 @@ fun HomePage(navController: NavController) {
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
                 itemsIndexed(images) { index, imageUrl, ->
-                    ProductCard(imageUrl = imageUrl)
+                    ProductCard(navController = navController, imageUrl = imageUrl)
                     Spacer(modifier = Modifier.width(18.dp))
                 }
             }
-
-            // Category
-            Spacer(modifier = Modifier.height(18.dp))
-            Text(
-                text = "Category",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold
-            )
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = 80.dp),
-                horizontalArrangement = Arrangement.spacedBy(16.dp),
-                verticalArrangement = Arrangement.spacedBy(16.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 16.dp)
-                    .padding(bottom = 50.dp)
-            ) {
-                itemsIndexed(images) { index, imageUrl, ->
-                    ProductCard(imageUrl = imageUrl)
-                    Spacer(modifier = Modifier.width(18.dp))
-                }
-            }
-
+            
         }
     }
 }
@@ -188,13 +168,16 @@ private fun CarouselSlider(images: List<String>) {
 }
 
 @Composable
-private fun ProductCard(imageUrl: String){
+private fun ProductCard(navController: NavController, imageUrl: String){
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp
         ),
         modifier = Modifier
             .size(width = 125.dp, height = 125.dp)
+            .clickable {
+                navController.navigate("category_list")
+            }
     ) {
         AsyncImage(
             model = imageUrl,
@@ -253,29 +236,5 @@ private fun TopBar(){
         },
     ) {
 
-    }
-}
-
-@Composable
-private fun BottomBar() {
-    data class NavigationItem(
-        val text: String,
-        val icon: ImageVector
-    )
-    var selectedItem by remember { mutableIntStateOf(0) }
-    val items = listOf(
-        NavigationItem("Home", Icons.Filled.Home),
-        NavigationItem("Chat", Icons.Filled.Email),
-        NavigationItem("Profile", Icons.Filled.Person)
-    )
-    NavigationBar {
-        items.forEachIndexed { index, item ->
-            NavigationBarItem(
-                icon = { Icon(item.icon, contentDescription = item.text) },
-                label = { Text(item.text) },
-                selected = selectedItem == index,
-                onClick = { selectedItem = index }
-            )
-        }
     }
 }
