@@ -1,16 +1,12 @@
 package com.topibatu.tanilink.View
 
-import account_proto.Account
-import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -19,13 +15,9 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,28 +26,23 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.PasswordVisualTransformation
-import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.orhanobut.hawk.Hawk
-import io.grpc.StatusException
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ForgotPassword(navController: NavController) {
+fun EmailVerificationPage(navController: NavController) {
     // TODO: change button color, get textfield state value, navigation from register -> login viceversa
 //    val accountRPC = remember { com.topibatu.tanilink.Util.Account() }
 //    val scope = rememberCoroutineScope()
 
-    val emailState = remember { mutableStateOf(TextFieldValue()) }
-
-//    val context = LocalContext.current
+    val context = LocalContext.current
 //    val loginRes = remember { mutableStateOf<Account.LoginRes?>(null) }
 
     Column(
@@ -64,63 +51,37 @@ fun ForgotPassword(navController: NavController) {
         Alignment.CenterHorizontally
     ) {
         // Title
-        Text(text = "Forgot Password", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(2.dp))
+        Text(text = "Email Verify Status", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+        Spacer(modifier = Modifier.height(16.dp))
 
-        // Description
-        Column (
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(text = "Please enter your email address to", fontSize = 15.sp)
-            Text(text = "receive verification code", fontSize = 15.sp)
-        }
+        // Texts
+        Text(text = "We sent an email to \n" +
+                "[Email]@gmail.com", fontSize = 16.sp)
+        Spacer(modifier = Modifier.height(8.dp))
+
+        Text(text = "Please check your email! \n" +
+                "If you don’t see it, you may need to \n" +
+                "check your spam folder.",
+            fontSize = 12.sp,
+            lineHeight = 14.sp,
+            textAlign = TextAlign.Center
+            )
         Spacer(modifier = Modifier.height(42.dp))
 
-        // Text Field
-        OutlinedTextField(
-            value = emailState.value,
-            placeholder = { Text("Email") },
-            onValueChange = {
-                emailState.value = it
-            })
-        Spacer(modifier = Modifier.height(16.dp))
+        Text(text = "Still can’t find the email? No problem.",
+            fontSize = 12.sp,
+            lineHeight = 14.sp,
+            textAlign = TextAlign.Center
+        )
+        Spacer(modifier = Modifier.height(8.dp))
 
         // Button
         Button(onClick = {
-//            scope.launch {
-//
-//                loginRes.value = try {
-//                    accountRPC.login(
-//                        email = emailState.value.text,
-//                        password = passwordState.value.text
-//                    )
-//                } catch (e: StatusException) {
-//                    Toast.makeText(
-//                        context,
-//                        "Login failed: ${e.status.description}",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                    null
-//                }
-//            }
-            navController.navigate("email_verification")
+
         }) {
-            Text(text = "Send")
+            Text(text = "Resent Verification Email")
         }
 
-        // If Login Success
-//        loginRes.value?.let { response ->
-//            Text("Login Success", modifier = Modifier.padding(top = 10.dp))
-//
-//            // Save Session
-//            Hawk.put("user-id", response.account.id);
-//            Hawk.put("access-token", response.tokens.accessToken);
-//
-//            LaunchedEffect(response) {
-//                delay(2500) // Delay for 2 seconds
-//                navController.navigate("home")
-//            }
-//        }
     }
 
     BoxWithConstraints(
@@ -132,7 +93,7 @@ fun ForgotPassword(navController: NavController) {
 
         // Top Right Image
         Image(
-            painter = rememberAsyncImagePainter("https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fdaun_forget_password.png?alt=media&token=aee0277e-e8ad-4104-8ab1-04f0705c93e1"),
+            painter = rememberAsyncImagePainter("https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fdaun_login.png?alt=media&token=c66edc3e-3028-4b81-8e47-e654c9f79a98"),
             contentDescription = null,
             modifier = Modifier
                 .size(200.dp)
@@ -143,7 +104,7 @@ fun ForgotPassword(navController: NavController) {
 
         // Bottom Left Image
         Image(
-            painter = rememberAsyncImagePainter("https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fdaun_forget_password.png?alt=media&token=aee0277e-e8ad-4104-8ab1-04f0705c93e1"),
+            painter = rememberAsyncImagePainter("https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fdaun_login.png?alt=media&token=c66edc3e-3028-4b81-8e47-e654c9f79a98"),
             contentDescription = null,
             modifier = Modifier
                 .size(200.dp)

@@ -16,6 +16,7 @@ import androidx.navigation.compose.rememberNavController
 import com.orhanobut.hawk.Hawk
 import com.topibatu.tanilink.View.CategoryListPage
 import com.topibatu.tanilink.View.ChatPage
+import com.topibatu.tanilink.View.EmailVerificationPage
 import com.topibatu.tanilink.View.ForgotPassword
 import com.topibatu.tanilink.View.HomePage
 import com.topibatu.tanilink.View.LoginPage
@@ -43,10 +44,11 @@ class MainActivity : ComponentActivity() {
                 val currentRoute = navBackStackEntry?.destination?.route
 
                 NavHost(navController = navController, startDestination = "main") {
-                    navigation(startDestination = "login", route = "login_signup"){
+                    navigation(startDestination = "login", route = "main"){
                         composable("login") { LoginPage(navController = navController) }
                         composable("sign_up") { RegisterPage(navController = navController) }
                         composable("forgot_password") { ForgotPassword(navController = navController) }
+                        composable("email_verification") { EmailVerificationPage(navController = navController) }
                     }
 
                     navigation(startDestination = "home", route = "main"){
