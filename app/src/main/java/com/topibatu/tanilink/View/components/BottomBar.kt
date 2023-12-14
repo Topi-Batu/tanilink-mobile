@@ -27,7 +27,7 @@ fun BottomBar(navController: NavController, activeIndex: Int) {
     var selectedItem by remember { mutableIntStateOf(activeIndex) }
     val items = listOf(
         NavigationItem("Home", "home", Icons.Filled.Home),
-        NavigationItem("Chat", "chat", Icons.Filled.Email),
+        NavigationItem("Chat", "chat_list", Icons.Filled.Email),
         NavigationItem("Prediction", "prediction", Icons.Filled.Check),
         NavigationItem("Profile", "profile", Icons.Filled.Person)
     )

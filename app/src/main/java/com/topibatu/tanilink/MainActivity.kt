@@ -15,6 +15,7 @@ import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.orhanobut.hawk.Hawk
 import com.topibatu.tanilink.View.CategoryListPage
+import com.topibatu.tanilink.View.ChatListPage
 import com.topibatu.tanilink.View.ChatPage
 import com.topibatu.tanilink.View.EmailVerificationPage
 import com.topibatu.tanilink.View.ForgotPassword
@@ -43,8 +44,8 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
-                NavHost(navController = navController, startDestination = "main") {
-                    navigation(startDestination = "login", route = "main"){
+                NavHost(navController = navController, startDestination = "login_signup") {
+                    navigation(startDestination = "login", route = "login_signup"){
                         composable("login") { LoginPage(navController = navController) }
                         composable("sign_up") { RegisterPage(navController = navController) }
                         composable("forgot_password") { ForgotPassword(navController = navController) }
@@ -54,6 +55,7 @@ class MainActivity : ComponentActivity() {
                     navigation(startDestination = "home", route = "main"){
                         composable("home") { HomePage(navController = navController) }
                         composable("prediction") { PredictionPage(navController = navController) }
+                        composable("chat_list") { ChatListPage(navController = navController) }
                         composable("chat") { ChatPage(navController = navController)}
                         composable("profile"){ ProfilePage(navController = navController)}
                         composable("category_list"){ CategoryListPage(navController = navController)}
