@@ -109,7 +109,7 @@ private fun BottomBar() {
             value = "Pesan",
             onValueChange = {},
             shape = RoundedCornerShape(32.dp),
-            modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp*0.75f)
+            modifier = Modifier.weight(1f)
         )
         Spacer(modifier = Modifier.width(16.dp))
         Icon(imageVector = Icons.Filled.Send, contentDescription = "Send Message", modifier = Modifier.size(38.dp).clickable {  })

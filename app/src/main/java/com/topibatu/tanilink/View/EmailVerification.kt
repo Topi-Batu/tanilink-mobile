@@ -1,5 +1,6 @@
 package com.topibatu.tanilink.View
 
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -18,6 +19,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -32,18 +36,25 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.google.protobuf.Empty
 import com.orhanobut.hawk.Hawk
+import com.topibatu.tanilink.Util.Account
+import io.grpc.StatusException
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmailVerificationPage(navController: NavController) {
     // TODO: change button color, get textfield state value, navigation from register -> login viceversa
-//    val accountRPC = remember { com.topibatu.tanilink.Util.Account() }
-//    val scope = rememberCoroutineScope()
+    val accountRPC = remember { Account() }
+    val scope = rememberCoroutineScope()
 
     val context = LocalContext.current
-//    val loginRes = remember { mutableStateOf<Account.LoginRes?>(null) }
+    val isEmailVerifiedRes = remember { mutableStateOf<Empty?>(null) }
+    val resendVerificationEmailRes = remember { mutableStateOf<Empty?>(null) }
+
+    val email = Hawk.get<String>("email")
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -55,20 +66,24 @@ fun EmailVerificationPage(navController: NavController) {
         Spacer(modifier = Modifier.height(16.dp))
 
         // Texts
-        Text(text = "We sent an email to \n" +
-                "[Email]@gmail.com", fontSize = 16.sp)
+        Text(
+            text = "We sent an email to \n" +
+                    "${email}", fontSize = 16.sp
+        )
         Spacer(modifier = Modifier.height(8.dp))
 
-        Text(text = "Please check your email! \n" +
-                "If you don’t see it, you may need to \n" +
-                "check your spam folder.",
+        Text(
+            text = "Please check your email! \n" +
+                    "If you don’t see it, you may need to \n" +
+                    "check your spam folder.",
             fontSize = 12.sp,
             lineHeight = 14.sp,
             textAlign = TextAlign.Center
-            )
+        )
         Spacer(modifier = Modifier.height(42.dp))
 
-        Text(text = "Still can’t find the email? No problem.",
+        Text(
+            text = "Still can’t find the email? No problem.",
             fontSize = 12.sp,
             lineHeight = 14.sp,
             textAlign = TextAlign.Center
@@ -77,10 +92,74 @@ fun EmailVerificationPage(navController: NavController) {
 
         // Button
         Button(onClick = {
+            scope.launch {
 
+                isEmailVerifiedRes.value = try {
+                    accountRPC.isEmailConfirmed(
+                        email = email
+                    )
+                } catch (e: StatusException) {
+                    Toast.makeText(
+                        context,
+                        "Email is not verified: ${e.status.description}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    null
+                }
+            }
         }) {
-            Text(text = "Resent Verification Email")
+            Text(text = "Check")
         }
+        Spacer(modifier = Modifier.height(8.dp))
+
+
+        Text(
+            text = "Resent Verification Email",
+            modifier = Modifier.clickable {
+                scope.launch {
+
+                    resendVerificationEmailRes.value = try {
+                        accountRPC.resendVerificationEmail(
+                            email = email
+                        )
+                    } catch (e: StatusException) {
+                        Toast.makeText(
+                            context,
+                            "Email is not verified: ${e.status.description}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        null
+                    }
+
+                }
+            }
+        )
+
+        // If email is verified
+        isEmailVerifiedRes.value?.let { response ->
+            Toast.makeText(
+                context,
+                "Your Email Is Verified",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            LaunchedEffect(response) {
+                delay(2500) // Delay for 2 seconds
+                navController.navigate("login")
+            }
+        }
+
+        // If resend email verification success
+        resendVerificationEmailRes.value?.let { response ->
+            Toast.makeText(
+                context,
+                "New Verification Email Has Been Sent",
+                Toast.LENGTH_SHORT
+            ).show()
+            resendVerificationEmailRes.value = null
+        }
+
+
 
     }
 

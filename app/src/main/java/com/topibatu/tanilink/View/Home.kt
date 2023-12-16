@@ -5,6 +5,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
@@ -42,6 +44,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -65,7 +68,7 @@ fun HomePage(navController: NavController) {
 
     Scaffold(
         topBar = {
-            TopBar()
+            TopBar(navController = navController)
         },
         bottomBar = {
             BottomBar(navController, 0)
@@ -113,12 +116,12 @@ fun HomePage(navController: NavController) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                itemsIndexed(images) { index, imageUrl, ->
+                itemsIndexed(images) { index, imageUrl ->
                     ProductCard(navController = navController, imageUrl = imageUrl)
                     Spacer(modifier = Modifier.width(18.dp))
                 }
             }
-            
+
         }
     }
 }
@@ -168,7 +171,7 @@ private fun CarouselSlider(images: List<String>) {
 }
 
 @Composable
-private fun ProductCard(navController: NavController, imageUrl: String){
+private fun ProductCard(navController: NavController, imageUrl: String) {
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp
@@ -192,49 +195,65 @@ private fun ProductCard(navController: NavController, imageUrl: String){
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun TopBar(){
+private fun TopBar(navController: NavController) {
     var text by remember { mutableStateOf("") }
     var active by remember { mutableStateOf(false) }
 
-    SearchBar(
+    Row(
         modifier = Modifier
             .padding(horizontal = 16.dp)
             .fillMaxWidth(),
-        query = text,//text showed on SearchBar
-        onQueryChange = {
-            text = it
-        },
-        onSearch = {
-            active = false
-        },
-        active = active,
-        onActiveChange = {
-            active = it
-        },
-        placeholder = {
-            Text("Search")
-        },
-        leadingIcon = {
-            if (!active) {
-                Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
-            }
-        },
-        trailingIcon = {
-            if (active) {
-                IconButton(
-                    onClick = {
-                        active = false
-                    }
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Clear,
-                        contentDescription = "Clear",
-                        tint = if (active) MaterialTheme.colorScheme.primary else Color.Gray
-                    )
-                }
-            }
-        },
+        verticalAlignment = Alignment.CenterVertically
     ) {
+        SearchBar(
+            query = text,//text showed on SearchBar
+            modifier = Modifier.weight(1f),
+            onQueryChange = {
+                text = it
+            },
+            onSearch = {
+                active = false
+            },
+            active = active,
+            onActiveChange = {
+                active = it
+            },
+            placeholder = {
+                Text("Search")
+            },
+            leadingIcon = {
+                if (!active) {
+                    Icon(imageVector = Icons.Default.Search, contentDescription = "Search")
+                }
+            },
+            trailingIcon = {
+                if (active) {
+                    IconButton(
+                        onClick = {
+                            active = false
+                        }
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Clear,
+                            contentDescription = "Clear",
+                            tint = if (active) MaterialTheme.colorScheme.primary else Color.Gray
+                        )
+                    }
+                }
+            },
+        ) {
 
+        }
+        Spacer(modifier = Modifier.width(4.dp))
+        Icon(
+            Icons.Filled.ShoppingCart,
+            contentDescription = "Cart",
+            modifier = Modifier
+                .size(32.dp)
+                .clickable {
+                    navController.navigate("cart")
+                }
+        )
     }
+
 }

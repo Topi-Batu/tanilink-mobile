@@ -14,6 +14,8 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navigation
 import androidx.navigation.compose.rememberNavController
 import com.orhanobut.hawk.Hawk
+import com.topibatu.tanilink.View.CartDetailPage
+import com.topibatu.tanilink.View.CartPage
 import com.topibatu.tanilink.View.CategoryListPage
 import com.topibatu.tanilink.View.ChatListPage
 import com.topibatu.tanilink.View.ChatPage
@@ -44,7 +46,9 @@ class MainActivity : ComponentActivity() {
                 val navBackStackEntry by navController.currentBackStackEntryAsState()
                 val currentRoute = navBackStackEntry?.destination?.route
 
-                NavHost(navController = navController, startDestination = "login_signup") {
+                val firstStartDestionation = if(Hawk.get<String>("access-token") != null) "main" else "login_signup"
+
+                NavHost(navController = navController, startDestination = firstStartDestionation) {
                     navigation(startDestination = "login", route = "login_signup"){
                         composable("login") { LoginPage(navController = navController) }
                         composable("sign_up") { RegisterPage(navController = navController) }
@@ -60,7 +64,8 @@ class MainActivity : ComponentActivity() {
                         composable("profile"){ ProfilePage(navController = navController)}
                         composable("category_list"){ CategoryListPage(navController = navController)}
                         composable("product_detail"){ ProductDetailPage(navController = navController)}
-//                      composable("cart") { CartPage(navController = navController) }
+                        composable("cart") { CartPage(navController = navController) }
+                        composable("cart_detail") { CartDetailPage(navController = navController) }
                     }
                 }
             }

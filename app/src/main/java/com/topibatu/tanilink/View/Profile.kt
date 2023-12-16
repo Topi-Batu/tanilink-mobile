@@ -1,15 +1,21 @@
 package com.topibatu.tanilink.View
 
+import account_proto.AccountProto
+import account_proto.AccountProto.AccountDetail
 import android.annotation.SuppressLint
 import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +24,11 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.itemsIndexed
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -25,15 +36,25 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableLongState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -45,19 +66,82 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.input.getSelectedText
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
+import com.orhanobut.hawk.Hawk
+import com.patrykandpatrick.vico.core.extension.setFieldValue
+import com.topibatu.tanilink.Util.Account
 import com.topibatu.tanilink.Util.Photo
 import com.topibatu.tanilink.View.components.BottomBar
+import com.topibatu.tanilink.View.components.DatePickerDialogComponent
 import com.topibatu.tanilink.View.components.TopBar
+import io.grpc.StatusException
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
+@OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun ProfilePage(navController: NavController) {
+    val accountRPC = remember { Account() }
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
+    val getProfileRes = remember { mutableStateOf<AccountDetail?>(null) }
+    val editProfileRes = remember { mutableStateOf<AccountDetail?>(null) }
+
+    // Gender Input Var
+    var expanded by remember { mutableStateOf(false) }
+    val genderList = arrayOf("Male", "Female")
+
+    // Date of Birth Input Var
+    var showDatePicker by remember { mutableStateOf(false) }
+
+    // TextField Value State
+    val nameState = remember { mutableStateOf("") }
+    val emailState = remember { mutableStateOf("") }
+    val phoneNumberState = remember { mutableStateOf("") }
+    val pictureUrl = remember { mutableStateOf("") }
+    val xp = remember { mutableStateOf("") }
+    val genderState = remember { mutableStateOf(genderList[0]) }
+    val date = remember { mutableStateOf("Date of Birth") }
+    val roles = remember { mutableStateOf("") }
+
+
+    // Get Profile
+    LaunchedEffect(null) {
+        getProfileRes.value = try {
+            accountRPC.getProfile()
+        } catch (e: StatusException) {
+            Toast.makeText(
+                context,
+                "Get Profile Failed: ${e.status.description}",
+                Toast.LENGTH_SHORT
+            ).show()
+            null
+        }
+
+        val requestFailedPrompt = "Data Request Failed"
+        nameState.value = getProfileRes.value?.fullName ?: requestFailedPrompt
+        emailState.value = getProfileRes.value?.email ?: requestFailedPrompt
+        phoneNumberState.value = getProfileRes.value?.phoneNumber ?: requestFailedPrompt
+        pictureUrl.value = getProfileRes.value?.picture ?: requestFailedPrompt
+        xp.value = getProfileRes.value?.xp.toString() ?: requestFailedPrompt
+        genderState.value = getProfileRes.value?.gender ?: requestFailedPrompt
+        date.value = getProfileRes.value?.dateOfBirth ?: requestFailedPrompt
+        roles.value = getProfileRes.value?.roleList.toString() ?: requestFailedPrompt
+    }
+
+
+    // Toggle Status Edit or Save
     val isEdit = remember { mutableStateOf(true) }
 
     // Photo Upload Service
@@ -69,7 +153,6 @@ fun ProfilePage(navController: NavController) {
             uri = it
         }
     )
-    val context = LocalContext.current
 
     Scaffold(
         topBar = {
@@ -81,25 +164,34 @@ fun ProfilePage(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    if(isEdit.value){
-                        // TODO: Make necessary textfield active (can edit)
+                    // FIXME: FIX PROMISE BASED REQUEST
+                    // Check if it is save button and save the current state to backend
+                    if (!isEdit.value) {
+                        // Update account information to gRPC
+                        scope.launch {
+                            uri?.let {
+                                // Upload image to firebase
+                                val imageUrl = photoServices.uploadToStorage(it, context, "image").await()
+                                pictureUrl.value = imageUrl
+                            }
 
-                    } else {
-                        // Upload image to firebase
-                        uri?.let {
-                            // firebase upload
-                            photoServices.uploadToStorage(
-                                uri = it,
-                                context = context,
-                                type = "image"
-                            ) { imageUrl ->
-//                                Log.d("HUTAO", imageUrl.toString())
-                                // TODO: Update photo profile url to gRPC
-
+                            editProfileRes.value = try {
+                                accountRPC.editProfile(
+                                    fullName = nameState.value,
+                                    phoneNumber = phoneNumberState.value,
+                                    picture = pictureUrl.value,
+                                    gender = genderState.value,
+                                    dateOfBirth = date.value
+                                )
+                            } catch (e: StatusException) {
+                                Toast.makeText(
+                                    context,
+                                    "Edit Profile Failed: ${e.status.description}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                null
                             }
                         }
-
-                        // TODO: Update other account information to gRPC
 
                     }
 
@@ -115,62 +207,165 @@ fun ProfilePage(navController: NavController) {
             }
         }
     ) {
-
-        Column(
+        LazyColumn(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            contentPadding = PaddingValues(bottom = 100.dp),
             modifier = Modifier
+                .padding(top = 86.dp)
                 .fillMaxSize()
-                .padding(top = 86.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Image(
-                painter = rememberAsyncImagePainter("https://assetsio.reedpopcdn.com/hu-tao-genshin.jpg?width=1200&height=1200&fit=crop&quality=100&format=png&enable=upscale&auto=webp"),
-                contentDescription = "avatar",
-                contentScale = ContentScale.Crop,
-                modifier = Modifier
-                    .size(160.dp)
-                    .clip(CircleShape)
-                    .border(2.dp, Color.Gray, CircleShape)
-                    .clickable {
-                        // Pick Image
-                        singlePhotoPicker.launch(
-                            PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
-                        )
-                    }
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = "Email",
-                onValueChange = {},
-                readOnly = true,
-                shape = RoundedCornerShape(32.dp),
-                modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp * 0.75f)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = "Name",
-                onValueChange = {},
-                readOnly = true,
-                shape = RoundedCornerShape(32.dp),
-                modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp * 0.75f)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = "Email",
-                onValueChange = {},
-                readOnly = true,
-                shape = RoundedCornerShape(32.dp),
-                modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp * 0.75f)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            OutlinedTextField(
-                value = "Telp. Number",
-                onValueChange = {},
-                readOnly = true,
-                shape = RoundedCornerShape(32.dp),
-                modifier = Modifier.width(LocalConfiguration.current.screenWidthDp.dp * 0.75f)
-            )
+            items(count = 1) {
+                AsyncImage(
+                    model = if (uri != null) uri else getProfileRes.value?.picture,
+                    contentDescription = "avatar",
+                    contentScale = ContentScale.Crop,
+                    modifier = Modifier
+                        .size(160.dp)
+                        .clip(CircleShape)
+                        .border(2.dp, Color.Gray, CircleShape)
+                        .clickable {
+                            if(!isEdit.value){
+                                // Pick Image
+                                singlePhotoPicker.launch(
+                                    PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                                )
+                            }
+                        }
+                )
+                Spacer(modifier = Modifier.height(12.dp))
 
-//            AsyncImage(model = uri, contentDescription = "Check Upload", modifier = Modifier.size(248.dp))
+
+                OutlinedTextField(
+                    value = nameState.value,
+                    onValueChange = {
+                        nameState.value = it
+                    },
+                    label = { Text(text = "Name") },
+                    readOnly = isEdit.value,
+                    shape = RoundedCornerShape(32.dp),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                OutlinedTextField(
+                    value = emailState.value,
+                    onValueChange = { },
+                    label = { Text(text = "Email") },
+                    enabled = false,
+                    shape = RoundedCornerShape(32.dp),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                OutlinedTextField(
+                    value = phoneNumberState.value,
+                    onValueChange = {
+                        phoneNumberState.value = it
+                    },
+                    label = { Text(text = "Phone Number") },
+                    readOnly = isEdit.value,
+                    shape = RoundedCornerShape(32.dp),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                OutlinedTextField(
+                    value = xp.value,
+                    onValueChange = { },
+                    label = { Text(text = "XP") },
+                    enabled = false,
+                    shape = RoundedCornerShape(32.dp),
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                ExposedDropdownMenuBox(
+                    expanded = expanded,
+                    onExpandedChange = {
+                        if (!isEdit.value) {
+                            expanded = !expanded
+                        }
+                    }) {
+                    OutlinedTextField(
+                        value = genderState.value,
+                        onValueChange = {},
+                        label = { Text("Gender") },
+                        readOnly = true,
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                        shape = RoundedCornerShape(32.dp),
+                        modifier = Modifier.menuAnchor()
+                    )
+                    ExposedDropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false }
+                    ) {
+                        genderList.forEach { item ->
+                            DropdownMenuItem(
+                                text = { Text(text = item) },
+                                onClick = {
+                                    genderState.value = item
+                                    expanded = false
+                                }
+                            )
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.clickable(onClick = {
+                        if (!isEdit.value) showDatePicker = true
+                    })
+                ) {
+                    OutlinedTextField(
+                        value = date.value,
+                        placeholder = { Text("Date of Birth") },
+                        label = { Text("Date of Birth") },
+                        enabled = false,
+                        colors = OutlinedTextFieldDefaults.colors(
+                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                            disabledContainerColor = Color.Transparent,
+                            disabledBorderColor = MaterialTheme.colorScheme.outline,
+                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                            disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
+                        ),
+                        shape = RoundedCornerShape(32.dp),
+                        onValueChange = { },
+                    )
+                }
+                if (showDatePicker) {
+                    DatePickerDialogComponent(
+                        onDateSelected = { date.value = it },
+                        onDismiss = { showDatePicker = false }
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+
+
+                OutlinedTextField(
+                    value = roles.value,
+                    onValueChange = { },
+                    label = { Text(text = "Roles") },
+                    enabled = false,
+                    shape = RoundedCornerShape(32.dp),
+                )
+            }
+        }
+
+        // If Edit Profile Success
+        editProfileRes.value?.let { response ->
+            Toast.makeText(
+                context,
+                "Your Profile Has Been Updated",
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }

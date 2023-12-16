@@ -1,5 +1,6 @@
 package com.topibatu.tanilink.View
 
+import account_proto.AccountProto.LoginRes
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -55,11 +56,16 @@ fun LoginPage(navController: NavController) {
     val accountRPC = remember { Account() }
     val scope = rememberCoroutineScope()
 
-    val emailState = remember { mutableStateOf(TextFieldValue()) }
-    val passwordState = remember { mutableStateOf(TextFieldValue()) }
+    val emailState = remember { mutableStateOf("") }
+    val passwordState = remember { mutableStateOf("") }
 
     val context = LocalContext.current
-    val loginRes = remember { mutableStateOf<account_proto.Account.LoginRes?>(null) }
+    val loginRes = remember { mutableStateOf<LoginRes?>(null) }
+
+    // Check if user already logged in
+    if(Hawk.get<String>("access-token") != null) {
+        navController.navigate("home")
+    }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -110,8 +116,8 @@ fun LoginPage(navController: NavController) {
 
                 loginRes.value = try {
                     accountRPC.login(
-                        email = emailState.value.text,
-                        password = passwordState.value.text
+                        email = emailState.value,
+                        password = passwordState.value
                     )
                 } catch (e: StatusException) {
                     Toast.makeText(
@@ -146,10 +152,13 @@ fun LoginPage(navController: NavController) {
             )
         }
 
-
         // If Login Success
         loginRes.value?.let { response ->
-            Text("Login Success", modifier = Modifier.padding(top = 10.dp))
+            Toast.makeText(
+                context,
+                "Login Success",
+                Toast.LENGTH_SHORT
+            ).show()
 
             // Save Session
             Hawk.put("user-id", response.account.id);

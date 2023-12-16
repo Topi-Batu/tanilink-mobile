@@ -1,6 +1,5 @@
 package com.topibatu.tanilink.View
 
-import account_proto.Account
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -41,7 +40,9 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.google.protobuf.Empty
 import com.orhanobut.hawk.Hawk
+import com.topibatu.tanilink.Util.Account
 import io.grpc.StatusException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -50,13 +51,13 @@ import kotlinx.coroutines.launch
 @Composable
 fun ForgotPassword(navController: NavController) {
     // TODO: change button color, get textfield state value, navigation from register -> login viceversa
-//    val accountRPC = remember { com.topibatu.tanilink.Util.Account() }
-//    val scope = rememberCoroutineScope()
+    val accountRPC = remember { Account() }
+    val scope = rememberCoroutineScope()
 
     val emailState = remember { mutableStateOf(TextFieldValue()) }
 
-//    val context = LocalContext.current
-//    val loginRes = remember { mutableStateOf<Account.LoginRes?>(null) }
+    val context = LocalContext.current
+    val forgotPasswordRes = remember { mutableStateOf<Empty?>(null) }
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -68,7 +69,7 @@ fun ForgotPassword(navController: NavController) {
         Spacer(modifier = Modifier.height(2.dp))
 
         // Description
-        Column (
+        Column(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text = "Please enter your email address to", fontSize = 15.sp)
@@ -87,40 +88,42 @@ fun ForgotPassword(navController: NavController) {
 
         // Button
         Button(onClick = {
-//            scope.launch {
-//
-//                loginRes.value = try {
-//                    accountRPC.login(
-//                        email = emailState.value.text,
-//                        password = passwordState.value.text
-//                    )
-//                } catch (e: StatusException) {
-//                    Toast.makeText(
-//                        context,
-//                        "Login failed: ${e.status.description}",
-//                        Toast.LENGTH_SHORT
-//                    ).show()
-//                    null
-//                }
-//            }
-            navController.navigate("email_verification")
+            scope.launch {
+
+                forgotPasswordRes.value = try {
+                    accountRPC.forgotPassword(
+                        email = emailState.value.text
+                    )
+                } catch (e: StatusException) {
+                    Toast.makeText(
+                        context,
+                        "Failed: ${e.status.description}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    null
+                }
+
+            }
+
         }) {
             Text(text = "Send")
         }
 
-        // If Login Success
-//        loginRes.value?.let { response ->
-//            Text("Login Success", modifier = Modifier.padding(top = 10.dp))
-//
-//            // Save Session
-//            Hawk.put("user-id", response.account.id);
-//            Hawk.put("access-token", response.tokens.accessToken);
-//
-//            LaunchedEffect(response) {
-//                delay(2500) // Delay for 2 seconds
-//                navController.navigate("home")
-//            }
-//        }
+        // If Forget Password Request is Success
+        forgotPasswordRes.value?.let { response ->
+            Toast.makeText(
+                context,
+                "Forget Password Email Has Been Sent",
+                Toast.LENGTH_SHORT
+            ).show()
+
+            forgotPasswordRes.value = null
+            LaunchedEffect(response) {
+                delay(2500) // Delay for 2 seconds
+                navController.navigate("login")
+            }
+        }
+
     }
 
     BoxWithConstraints(
