@@ -2,6 +2,7 @@ package com.topibatu.tanilink.View
 
 import android.annotation.SuppressLint
 import android.content.res.Resources.Theme
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -21,13 +22,17 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowForward
 import androidx.compose.material.icons.filled.Clear
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Divider
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -48,6 +53,8 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.topibatu.tanilink.View.components.BottomBar
 import com.topibatu.tanilink.View.components.TopBar
+import io.grpc.StatusException
+import kotlinx.coroutines.launch
 
 data class Product(
     var namaToko: String,
@@ -126,7 +133,16 @@ fun CartPage(navController: NavController) {
             TopBar(navController, "Cart")
         },
         bottomBar = {
-            BottomBar(navController, 1)
+            BottomBar(navController, -1)
+        },
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    navController.navigate("cart_detail")
+                }
+            ) {
+                Icon(Icons.Filled.ArrowForward, "Go To Cart Detail")
+            }
         }
     ) {
         LazyVerticalGrid(
@@ -137,7 +153,7 @@ fun CartPage(navController: NavController) {
                 .padding(start = 8.dp, end = 8.dp, top = 70.dp, bottom = 90.dp)
         ) {
             itemsIndexed(products) { index, product ->
-                ProductItems(product = product)
+                ProductItem(product = product)
                 Divider(color = MaterialTheme.colorScheme.primary, thickness = 1.dp)
             }
         }
@@ -146,16 +162,19 @@ fun CartPage(navController: NavController) {
 }
 
 @Composable
-fun ProductItems(product: Product) {
-    Column (
+private fun ProductItem(product: Product) {
+    val isCheckedLocal = remember { mutableStateOf(product.isChecked) }
+    val jumlahProductLocal = remember { mutableStateOf(product.jumlahProduk) }
+
+    Column(
         modifier = Modifier.padding(top = 12.dp, bottom = 28.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Checkbox(
-                checked = product.isChecked,
-                onCheckedChange = { product.isChecked = it }
+                checked = isCheckedLocal.value,
+                onCheckedChange = { isCheckedLocal.value = it }
             )
 
             Column {
@@ -165,7 +184,7 @@ fun ProductItems(product: Product) {
                     model = product.fotoProduk,
                     contentDescription = "Product Image",
                     modifier = Modifier
-                        .size(118.dp)
+                        .size(88.dp)
                         .clip(RoundedCornerShape(18.dp))
                         .border(2.dp, Color.Gray, RoundedCornerShape(18.dp))
                 )
@@ -173,7 +192,8 @@ fun ProductItems(product: Product) {
             Spacer(modifier = Modifier.width(8.dp))
 
             Column(
-                horizontalAlignment = Alignment.CenterHorizontally
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier.weight(1f)
             ) {
                 Button(
                     modifier = Modifier
@@ -203,20 +223,20 @@ fun ProductItems(product: Product) {
                         modifier = Modifier
                             .height(33.dp)
                             .width(56.dp),
-                        onClick = { product.jumlahProduk++ }
+                        onClick = { jumlahProductLocal.value-- }
                     ) {
-                        Text(text = "+")
+                        Text(text = "-")
                     }
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = product.jumlahProduk.toString(), fontSize = 24.sp)
+                    Text(text = jumlahProductLocal.value.toString(), fontSize = 24.sp)
                     Spacer(modifier = Modifier.width(8.dp))
                     Button(
                         modifier = Modifier
                             .height(33.dp)
                             .width(56.dp),
-                        onClick = { product.jumlahProduk-- }
+                        onClick = { jumlahProductLocal.value++ }
                     ) {
-                        Text(text = "-")
+                        Text(text = "+")
                     }
                 }
             }

@@ -13,11 +13,12 @@ import java.util.Date
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DatePickerDialogComponent(
+    datePattern: String,
     onDateSelected: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
     fun convertMillisToDate(millis: Long): String {
-        val formatter = SimpleDateFormat("MM/dd/yyyy")
+        val formatter = SimpleDateFormat(datePattern)
         return formatter.format(Date(millis))
     }
 

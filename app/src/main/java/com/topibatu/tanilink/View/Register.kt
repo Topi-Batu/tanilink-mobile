@@ -190,6 +190,7 @@ fun RegisterPage(navController: NavController) {
         }
         if (showDatePicker) {
             DatePickerDialogComponent(
+                datePattern = "MM/dd/yyyy",
                 onDateSelected = { date = it },
                 onDismiss = { showDatePicker = false }
             )

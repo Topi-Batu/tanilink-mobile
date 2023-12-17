@@ -1,6 +1,8 @@
 package com.topibatu.tanilink.View
 
+import account_proto.AccountProto
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -49,22 +51,46 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.orhanobut.hawk.Hawk
+import com.topibatu.tanilink.Util.Account
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.material3.IconButton as IconButton
 import com.topibatu.tanilink.View.components.BottomBar
+import io.grpc.StatusException
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomePage(navController: NavController) {
     // TODO: FIX SCROLL, ENHANCE BOTTOM NAV, SEPARATE TOP AND BOTTOM NAV INTO DIFFERENT FILES
+    val accountRPC = remember { Account() }
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
+
+    val getProfileRes = remember { mutableStateOf<AccountProto.AccountDetail?>(null) }
+
+    // Get Profile
+    LaunchedEffect(null) {
+        getProfileRes.value = try {
+            accountRPC.getProfile()
+        } catch (e: StatusException) {
+            Toast.makeText(
+                context,
+                "Get Profile Failed: ${e.status.description}",
+                Toast.LENGTH_SHORT
+            ).show()
+            null
+        }
+    }
+
+    val profileName = getProfileRes.value?.fullName ?: "..."
 
     Scaffold(
         topBar = {
@@ -72,7 +98,8 @@ fun HomePage(navController: NavController) {
         },
         bottomBar = {
             BottomBar(navController, 0)
-        }
+        },
+        // TODO: Tambahin FAB direct ke website
     ) {
         val images = listOf(
             "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner1.png?alt=media&token=985a3e0b-8773-4c84-afae-bcd7c01e695d",
@@ -92,7 +119,7 @@ fun HomePage(navController: NavController) {
             // Title
             Spacer(modifier = Modifier.height(24.dp))
             Text(
-                text = "Welcome to TaniLink, [NAME]",
+                text = "Welcome to TaniLink, $profileName",
                 fontSize = 16.sp,
                 fontWeight = FontWeight.Bold
             )

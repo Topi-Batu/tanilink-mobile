@@ -342,6 +342,7 @@ fun ProfilePage(navController: NavController) {
                 }
                 if (showDatePicker) {
                     DatePickerDialogComponent(
+                        datePattern = "MM/dd/yyyy",
                         onDateSelected = { date.value = it },
                         onDismiss = { showDatePicker = false }
                     )
