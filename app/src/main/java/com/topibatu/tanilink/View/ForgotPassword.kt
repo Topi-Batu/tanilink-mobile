@@ -102,7 +102,6 @@ fun ForgotPassword(navController: NavController) {
                     ).show()
                     null
                 }
-
             }
 
         }) {
@@ -117,7 +116,6 @@ fun ForgotPassword(navController: NavController) {
                 Toast.LENGTH_SHORT
             ).show()
 
-            forgotPasswordRes.value = null
             LaunchedEffect(response) {
                 delay(2500) // Delay for 2 seconds
                 navController.navigate("login")

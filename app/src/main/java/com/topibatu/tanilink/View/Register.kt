@@ -116,14 +116,16 @@ fun RegisterPage(navController: NavController) {
         OutlinedTextField(
             value = nameState.value,
             placeholder = { Text("Full Name") },
+            singleLine = true,
             onValueChange = {
-                nameState.value = it
+                nameState.value = it.take(15)
             })
         Spacer(modifier = Modifier.height(8.dp))
 
         OutlinedTextField(
             value = emailState.value,
             placeholder = { Text("Email") },
+            singleLine = true,
             onValueChange = {
                 emailState.value = it
             })
@@ -132,6 +134,7 @@ fun RegisterPage(navController: NavController) {
         OutlinedTextField(
             value = phoneNumberState.value,
             placeholder = { Text("Phone Number") },
+            singleLine = true,
             onValueChange = { phoneNumberState.value = it },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
@@ -200,6 +203,7 @@ fun RegisterPage(navController: NavController) {
         OutlinedTextField(
             value = passwordState.value,
             placeholder = { Text("Password") },
+            singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             onValueChange = {
                 passwordState.value = it
@@ -209,6 +213,7 @@ fun RegisterPage(navController: NavController) {
         OutlinedTextField(
             value = confirmPasswordState.value,
             placeholder = { Text("Confirm Password") },
+            singleLine = true,
             visualTransformation = PasswordVisualTransformation(),
             onValueChange = {
                 confirmPasswordState.value = it

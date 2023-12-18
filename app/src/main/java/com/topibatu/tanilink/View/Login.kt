@@ -165,7 +165,7 @@ fun LoginPage(navController: NavController) {
             Hawk.put("access-token", response.tokens.accessToken);
 
             LaunchedEffect(response) {
-                delay(2500) // Delay for 2 seconds
+                delay(500) // Delay for 0.5 seconds
                 navController.navigate("home")
             }
         }

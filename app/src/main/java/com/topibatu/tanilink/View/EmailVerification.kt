@@ -19,9 +19,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -55,6 +57,11 @@ fun EmailVerificationPage(navController: NavController) {
     val resendVerificationEmailRes = remember { mutableStateOf<Empty?>(null) }
 
     val email = Hawk.get<String>("email")
+
+    // Resent Cooldown Timer
+    var times by remember { mutableStateOf(60) }
+    var timeLeft by remember { mutableStateOf(0) }
+
 
     Column(
         modifier = Modifier.fillMaxSize(),
@@ -112,28 +119,40 @@ fun EmailVerificationPage(navController: NavController) {
         }
         Spacer(modifier = Modifier.height(8.dp))
 
+        // Check if there is cooldown
+        if (timeLeft == 0) { // No cooldown
+            Text(
+                text = "Resent Verification Email",
+                modifier = Modifier.clickable {
+                    scope.launch {
 
-        Text(
-            text = "Resent Verification Email",
-            modifier = Modifier.clickable {
-                scope.launch {
+                        resendVerificationEmailRes.value = try {
+                            accountRPC.resendVerificationEmail(
+                                email = email
+                            )
+                        } catch (e: StatusException) {
+                            Toast.makeText(
+                                context,
+                                "Email is not verified: ${e.status.description}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            null
+                        }
 
-                    resendVerificationEmailRes.value = try {
-                        accountRPC.resendVerificationEmail(
-                            email = email
-                        )
-                    } catch (e: StatusException) {
-                        Toast.makeText(
-                            context,
-                            "Email is not verified: ${e.status.description}",
-                            Toast.LENGTH_SHORT
-                        ).show()
-                        null
+                        // Add Cooldown
+                        timeLeft = times
+                        while (timeLeft > 0) {
+                            delay(1000L)
+                            timeLeft--
+                        }
+
                     }
-
                 }
-            }
-        )
+            )
+        } else { // Cooldown
+            Text(text = "Resent Verification Email in $timeLeft seconds")
+        }
+
 
         // If email is verified
         isEmailVerifiedRes.value?.let { response ->
@@ -158,7 +177,6 @@ fun EmailVerificationPage(navController: NavController) {
             ).show()
             resendVerificationEmailRes.value = null
         }
-
 
 
     }

@@ -48,7 +48,7 @@ import com.patrykandpatrick.vico.core.entry.ChartEntryModelProducer
 import com.patrykandpatrick.vico.core.entry.entriesOf
 import com.patrykandpatrick.vico.core.entry.entryModelOf
 import com.patrykandpatrick.vico.core.entry.entryOf
-import com.patrykandpatrick.vico.views.chart.line.lineChart
+import com.patrykandpatrick.vico.compose.chart.line.lineChart
 import com.topibatu.tanilink.View.components.BottomBar
 import com.topibatu.tanilink.View.components.DatePickerDialogComponent
 import com.topibatu.tanilink.View.components.TopBar
@@ -106,7 +106,7 @@ fun PredictionPage(navController: NavController) {
 
             // Chart
             Chart(
-                chart = columnChart(),
+                chart = lineChart(),
                 model = chartEntryModel,
                 startAxis = rememberStartAxis(),
                 bottomAxis = rememberBottomAxis(valueFormatter = horizontalAxisValueFormatter)
@@ -157,6 +157,7 @@ fun PredictionPage(navController: NavController) {
                         value = dateState.value,
                         placeholder = { Text("Bulan/Tahun") },
                         label = { Text("Bulan/Tahun") },
+                        trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = showDatePicker) },
                         enabled = false,
                         colors = OutlinedTextFieldDefaults.colors(
                             disabledTextColor = MaterialTheme.colorScheme.onSurface,

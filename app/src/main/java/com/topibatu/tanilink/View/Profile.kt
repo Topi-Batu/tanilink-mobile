@@ -36,6 +36,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.ExitToApp
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -47,6 +48,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.MutableLongState
@@ -76,6 +78,7 @@ import com.orhanobut.hawk.Hawk
 import com.patrykandpatrick.vico.core.extension.setFieldValue
 import com.topibatu.tanilink.Util.Account
 import com.topibatu.tanilink.Util.Photo
+import com.topibatu.tanilink.View.components.AddressField
 import com.topibatu.tanilink.View.components.BottomBar
 import com.topibatu.tanilink.View.components.DatePickerDialogComponent
 import com.topibatu.tanilink.View.components.TopBar
@@ -105,6 +108,9 @@ fun ProfilePage(navController: NavController) {
     // Date of Birth Input Var
     var showDatePicker by remember { mutableStateOf(false) }
 
+    // Address
+    var showAddress by remember { mutableStateOf(false) }
+
     // TextField Value State
     val nameState = remember { mutableStateOf("") }
     val emailState = remember { mutableStateOf("") }
@@ -114,6 +120,20 @@ fun ProfilePage(navController: NavController) {
     val genderState = remember { mutableStateOf(genderList[0]) }
     val date = remember { mutableStateOf("Date of Birth") }
     val roles = remember { mutableStateOf("") }
+
+    // Default TextField Color
+    val defaultTextFieldColor: TextFieldColors = OutlinedTextFieldDefaults.colors(
+        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+        disabledContainerColor = Color.Transparent,
+        disabledBorderColor = MaterialTheme.colorScheme.outline,
+        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
+        disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
+    )
 
 
     // Get Profile
@@ -156,7 +176,51 @@ fun ProfilePage(navController: NavController) {
 
     Scaffold(
         topBar = {
-            TopBar(navController, "Profile")
+            Row(
+                modifier = Modifier
+                    .padding(all = 16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                // back Icon
+                Icon(
+                    Icons.Filled.ArrowBack, "Back", modifier = Modifier
+                        .size(38.dp)
+                        .clickable {
+                            navController.popBackStack()
+                        }
+                )
+                // Name
+                Spacer(modifier = Modifier.width(24.dp))
+                Text(
+                    "Profile",
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp,
+                    modifier = Modifier.weight(1f)
+                )
+
+                // Log Out Icon
+                Icon(
+                    Icons.Filled.ExitToApp,
+                    contentDescription = "Log Out",
+                    tint = Color.Red,
+                    modifier = Modifier
+                        .size(38.dp)
+                        .clickable {
+                            navController.navigate("login")
+
+                            // Delete Session
+                            Hawk.delete("user-id");
+                            Hawk.delete("access-token");
+
+                            Toast.makeText(
+                                context,
+                                "Logged Out",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                )
+            }
         },
         bottomBar = {
             BottomBar(navController, 3)
@@ -164,14 +228,14 @@ fun ProfilePage(navController: NavController) {
         floatingActionButton = {
             FloatingActionButton(
                 onClick = {
-                    // FIXME: FIX PROMISE BASED REQUEST
                     // Check if it is save button and save the current state to backend
                     if (!isEdit.value) {
                         // Update account information to gRPC
                         scope.launch {
                             uri?.let {
                                 // Upload image to firebase
-                                val imageUrl = photoServices.uploadToStorage(it, context, "image").await()
+                                val imageUrl =
+                                    photoServices.uploadToStorage(it, context, "image").await()
                                 pictureUrl.value = imageUrl
                             }
 
@@ -215,6 +279,7 @@ fun ProfilePage(navController: NavController) {
                 .fillMaxSize()
         ) {
             items(count = 1) {
+                // Profile Image
                 AsyncImage(
                     model = if (uri != null) uri else getProfileRes.value?.picture,
                     contentDescription = "avatar",
@@ -224,7 +289,7 @@ fun ProfilePage(navController: NavController) {
                         .clip(CircleShape)
                         .border(2.dp, Color.Gray, CircleShape)
                         .clickable {
-                            if(!isEdit.value){
+                            if (!isEdit.value) {
                                 // Pick Image
                                 singlePhotoPicker.launch(
                                     PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
@@ -234,19 +299,18 @@ fun ProfilePage(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(12.dp))
 
-
+                // Name
                 OutlinedTextField(
                     value = nameState.value,
-                    onValueChange = {
-                        nameState.value = it
-                    },
+                    onValueChange = { nameState.value = it },
                     label = { Text(text = "Name") },
+                    singleLine = true,
                     readOnly = isEdit.value,
                     shape = RoundedCornerShape(32.dp),
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-
+                // Email
                 OutlinedTextField(
                     value = emailState.value,
                     onValueChange = { },
@@ -256,19 +320,18 @@ fun ProfilePage(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-
+                // Phone Number
                 OutlinedTextField(
                     value = phoneNumberState.value,
-                    onValueChange = {
-                        phoneNumberState.value = it
-                    },
+                    onValueChange = { phoneNumberState.value = it },
+                    singleLine = true,
                     label = { Text(text = "Phone Number") },
                     readOnly = isEdit.value,
                     shape = RoundedCornerShape(32.dp),
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-
+                // XP
                 OutlinedTextField(
                     value = xp.value,
                     onValueChange = { },
@@ -278,7 +341,7 @@ fun ProfilePage(navController: NavController) {
                 )
                 Spacer(modifier = Modifier.height(16.dp))
 
-
+                // Gender
                 ExposedDropdownMenuBox(
                     expanded = expanded,
                     onExpandedChange = {
@@ -312,7 +375,7 @@ fun ProfilePage(navController: NavController) {
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
-
+                // Date of Birth
                 Box(
                     contentAlignment = Alignment.Center,
                     modifier = Modifier.clickable(onClick = {
@@ -324,18 +387,7 @@ fun ProfilePage(navController: NavController) {
                         placeholder = { Text("Date of Birth") },
                         label = { Text("Date of Birth") },
                         enabled = false,
-                        colors = OutlinedTextFieldDefaults.colors(
-                            disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                            disabledContainerColor = Color.Transparent,
-                            disabledBorderColor = MaterialTheme.colorScheme.outline,
-                            disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
-                            disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                            disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
-                        ),
+                        colors = defaultTextFieldColor,
                         shape = RoundedCornerShape(32.dp),
                         onValueChange = { },
                     )
@@ -349,7 +401,33 @@ fun ProfilePage(navController: NavController) {
                 }
                 Spacer(modifier = Modifier.height(16.dp))
 
+                // Address
+                Box(
+                    contentAlignment = Alignment.Center,
+                    modifier = Modifier.clickable(onClick = {
+                        if (!isEdit.value) showAddress = true
+                    })
+                ) {
+                    OutlinedTextField(
+                        value = "Address 1", // TODO: Change this to be dynamic
+                        placeholder = { Text("Address") },
+                        label = { Text("Address") },
+                        enabled = false,
+                        colors = defaultTextFieldColor,
+                        shape = RoundedCornerShape(32.dp),
+                        onValueChange = { },
+                    )
+                }
+                if (showAddress) {
+                    AddressField(value = "", setShowDialog = {
+                        showAddress = it
+                    }) {
+                        Log.i("HomePage", "HomePage : $it")
+                    }
+                }
+                Spacer(modifier = Modifier.height(16.dp))
 
+                // Roles
                 OutlinedTextField(
                     value = roles.value,
                     onValueChange = { },
