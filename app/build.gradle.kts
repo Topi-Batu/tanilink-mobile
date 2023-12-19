@@ -132,6 +132,8 @@ dependencies {
     implementation("com.google.firebase:firebase-storage-ktx")
     implementation("com.google.firebase:firebase-analytics-ktx")
     implementation("io.coil-kt:coil-compose:2.5.0") // For loading and displaying images
+    implementation("com.google.firebase:firebase-messaging-ktx:23.4.0") // FCM
+    implementation("com.google.accompanist:accompanist-permissions:0.31.1-alpha") // Notification permission
 
 //    Session Manager Library
     implementation("com.orhanobut:hawk:2.0.1")

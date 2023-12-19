@@ -7,6 +7,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.window.DialogProperties
 import java.text.SimpleDateFormat
 import java.util.Date
 
@@ -46,7 +47,7 @@ fun DatePickerDialogComponent(
             }) {
                 Text(text = "Cancel")
             }
-        }
+        },
     ) {
         DatePicker(
             state = datePickerState

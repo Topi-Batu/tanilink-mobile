@@ -1,7 +1,9 @@
 package com.topibatu.tanilink.View
 
 import account_proto.AccountProto
+import android.Manifest
 import android.annotation.SuppressLint
+import android.os.Build
 import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -21,16 +23,21 @@ import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Done
+import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.filled.ShoppingCart
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.NavigationBar
@@ -38,8 +45,10 @@ import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SearchBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
@@ -52,23 +61,34 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.PermissionState
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.ktx.messaging
 import com.orhanobut.hawk.Hawk
+import com.topibatu.tanilink.R
 import com.topibatu.tanilink.Util.Account
+import com.topibatu.tanilink.Util.Photo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import androidx.compose.material3.IconButton as IconButton
 import com.topibatu.tanilink.View.components.BottomBar
+import com.topibatu.tanilink.View.components.FirebaseMessagingNotificationPermissionDialog
 import io.grpc.StatusException
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomePage(navController: NavController) {
+
     // TODO: FIX SCROLL, ENHANCE BOTTOM NAV, SEPARATE TOP AND BOTTOM NAV INTO DIFFERENT FILES
     val accountRPC = remember { Account() }
     val scope = rememberCoroutineScope()
@@ -92,6 +112,23 @@ fun HomePage(navController: NavController) {
 
     val profileName = getProfileRes.value?.fullName ?: "..."
 
+    // Firebase Cloud Messaging (Notification Service)
+    val showNotificationDialog = remember { mutableStateOf(false) }
+    val notificationPermissionState = rememberPermissionState(
+        permission = Manifest.permission.POST_NOTIFICATIONS
+    )
+    if (showNotificationDialog.value) FirebaseMessagingNotificationPermissionDialog(
+        showNotificationDialog = showNotificationDialog,
+        notificationPermissionState = notificationPermissionState
+    )
+    LaunchedEffect(key1=Unit){
+        if (notificationPermissionState.status.isGranted ||
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
+        ) {
+            Firebase.messaging.subscribeToTopic("main")
+        } else showNotificationDialog.value = true
+    }
+
     Scaffold(
         topBar = {
             TopBar(navController = navController)
@@ -99,7 +136,20 @@ fun HomePage(navController: NavController) {
         bottomBar = {
             BottomBar(navController, 0)
         },
-        // TODO: Tambahin FAB direct ke website
+        floatingActionButton = {
+            FloatingActionButton(
+                onClick = {
+                    /* TODO: Redirect to seller page */
+                    Toast.makeText(
+                        context,
+                        "Redirecting to Seller Page ...",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            ) {
+                Icon(Icons.Filled.Add, "Add Product")
+            }
+        }
     ) {
         val images = listOf(
             "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner1.png?alt=media&token=985a3e0b-8773-4c84-afae-bcd7c01e695d",
