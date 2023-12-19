@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountCircle
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.Icon
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat.getSystemService
@@ -41,7 +42,7 @@ class FCMService : FirebaseMessagingService() {
         val notification = NotificationCompat.Builder(this, channelId)
             .setContentTitle(message.notification?.title)
             .setContentText(message.notification?.body)
-            .setSmallIcon(androidx.core.R.drawable.notification_template_icon_bg)
+//            .setSmallIcon(R.drawable.ic_launcher_background)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .build()

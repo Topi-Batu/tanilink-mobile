@@ -1,6 +1,12 @@
 package com.topibatu.tanilink.Util
 
+import account_proto.AccountProto
 import account_proto.AccountProto.AccountDetail
+import account_proto.AccountProto.AddressDetail
+import account_proto.AccountProto.AllAddressDetails
+import account_proto.AccountProto.AllAreaDetails
+import account_proto.AccountProto.BatchEditAddressReq
+import account_proto.AccountProto.BatchEditAddressReq.EditAddressReq
 import account_proto.AccountProto.EditProfileReq
 import account_proto.AccountProto.EmailReq
 import account_proto.AccountProto.RegisterReq
@@ -8,6 +14,7 @@ import account_proto.AccountProto.RegisterRes
 import account_proto.AccountProto.LoginReq
 import account_proto.AccountProto.LoginRes
 import account_proto.AccountsGrpcKt
+import account_proto.BatchEditAddressReqKt
 import android.net.Uri
 import com.google.protobuf.Empty
 import com.orhanobut.hawk.Hawk
@@ -15,6 +22,7 @@ import com.orhanobut.hawk.Hawk.put
 import io.grpc.Metadata
 import io.grpc.StatusException
 import io.grpc.okhttp.OkHttpChannelBuilder
+import com.topibatu.tanilink.View.components.Address
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 
@@ -32,6 +40,10 @@ class Account() {
         .build()
 
     private val account = AccountsGrpcKt.AccountsCoroutineStub(channel)
+
+    val headers = Metadata().apply {
+        put(Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER), "Bearer ${Hawk.get<String>("access-token")}")
+    }
 
     suspend fun register(name: String, email: String, phoneNumber: String, gender: String, dateOfBirth: String, password: String, confirmPassword: String): RegisterRes {
         try {
@@ -108,9 +120,6 @@ class Account() {
     suspend fun getProfile(): AccountDetail {
         try {
             val request = Empty.newBuilder().build()
-            val headers = Metadata().apply {
-                put(Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER), "Bearer ${Hawk.get<String>("access-token")}")
-            }
             val response = account.getProfile(request, headers)
             return response
         } catch (e: StatusException) {
@@ -128,10 +137,64 @@ class Account() {
                 .setGender(gender)
                 .setDateOfBirth(dateOfBirth)
                 .build()
-            val headers = Metadata().apply {
-                put(Metadata.Key.of("Authorization", Metadata.ASCII_STRING_MARSHALLER), "Bearer ${Hawk.get<String>("access-token")}")
-            }
             val response = account.editProfile(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun getAllArea(): AllAreaDetails {
+        try {
+            val request = Empty.newBuilder().build()
+            val response = account.getAllArea(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun getAddress(): AllAddressDetails {
+        try {
+            val request = Empty.newBuilder().build()
+            val response = account.getAddress(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun editAddress(addresses: List<Address>): AllAddressDetails {
+        try {
+            val requestBuilder = BatchEditAddressReq.newBuilder()
+
+            for (address in addresses) {
+                val editAddressBuilder = EditAddressReq.newBuilder()
+                    .setId(address.id ?: "")
+                    .setAreaId(address.areaDetail?.id)
+                    .setDetail(address.addressDetail)
+
+                requestBuilder.addAddress(editAddressBuilder.build())
+            }
+
+            val request = requestBuilder.build()
+            val response = account.editAddress(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun deleteAddress(addressId: String): AllAddressDetails {
+        try {
+            val request = AccountProto.AddressIdReq.newBuilder()
+                .setAddressId(addressId)
+                .build()
+            val response = account.deleteAddress(request, headers)
             return response
         } catch (e: StatusException) {
             e.printStackTrace()

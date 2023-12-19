@@ -1,6 +1,7 @@
 package com.topibatu.tanilink
 
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -35,6 +36,7 @@ import com.topibatu.tanilink.ui.theme.TanilinkTheme
 
 class MainActivity : ComponentActivity() {
 
+    @SuppressLint("NewApi")
     @RequiresApi(Build.VERSION_CODES.O)
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -80,8 +82,18 @@ class MainActivity : ComponentActivity() {
                         composable("chat_list") { ChatListPage(navController = navController) }
                         composable("chat") { ChatPage(navController = navController)}
                         composable("profile"){ ProfilePage(navController = navController)}
-                        composable("category_list"){ CategoryListPage(navController = navController)}
-                        composable("product_detail"){ ProductDetailPage(navController = navController)}
+                        composable("category_list/{param1}"){
+                            val param1 = it.arguments?.getString("param1")
+                            if (param1 != null) {
+                                CategoryListPage(navController = navController, param1)
+                            }
+                        }
+                        composable("product_detail/{productId}"){
+                            val productId = it.arguments?.getString("productId")
+                            if (productId != null) {
+                                ProductDetailPage(navController = navController, productId)
+                            }
+                        }
                         composable("cart") { CartPage(navController = navController) }
                         composable("cart_detail") { CartDetailPage(navController = navController) }
                     }

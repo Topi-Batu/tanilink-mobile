@@ -1,0 +1,158 @@
+syntax = "proto3";
+
+option csharp_namespace = "TaniLink_Backend";
+
+package marketplace_proto;
+
+import "google/protobuf/empty.proto";
+import "google/protobuf/timestamp.proto";
+
+service Marketplace {
+  rpc GetAllProducts (google.protobuf.Empty) returns (AllProductDetails);
+  rpc GetProductById (IdReq) returns (ProductDetail);
+  rpc GetProductByCommodityId (IdReq) returns (AllProductDetails);
+  rpc GetProductByAreaId (IdReq) returns (AllProductDetails);
+  rpc GetProductBySellerId (IdReq) returns (AllProductDetails);
+  rpc GetProductByPriceRange (PriceRange) returns (AllProductDetails);
+  rpc SearchProduct(Query) returns (AllProductDetails);
+  rpc GetAllCommodities (google.protobuf.Empty) returns (AllCommodityDetails);
+  rpc GetCommodityById (IdReq) returns (CommodityDetail);
+
+  // Need Authorized User
+  rpc GetUserShoppingCarts (google.protobuf.Empty) returns (AllShoppingCartDetail);
+  rpc GetShoppingCartById (IdReq) returns (ShoppingCartDetail);
+  rpc GetUserOrders (google.protobuf.Empty) returns (AllOrderDetail);
+  rpc GetOrderById (IdReq) returns (OrderDetail);
+  rpc GetUserInvoices (google.protobuf.Empty) returns (AllInvoiceDetail);
+  rpc GetInvoiceById (IdReq) returns (InvoiceDetail);
+  rpc AddProductToShoppingCart (IdReq) returns (AllShoppingCartDetail);
+  rpc DecreaseProductInShoppingCart (IdReq) returns (AllShoppingCartDetail);
+  rpc RemoveProductFromShoppingCart (IdReq) returns (AllShoppingCartDetail);
+  rpc Checkout (CheckoutReq) returns (InvoiceDetail);
+  rpc PlaceOrder (PlaceOrderReq) returns (InvoiceDetail);
+  rpc CancelOrder (IdReq) returns (OrderDetail);
+  rpc ConfirmOrder (IdReq) returns (OrderDetail);
+
+}
+
+enum InvoiceStatus {
+  PAID = 0;
+  UNPAID = 1;
+}
+
+enum OrderStatus{
+  ACCEPTED = 0;
+  PROCESSING = 1;
+  DELIVERING = 2;
+  DELIVERED = 3;
+  FINISHED = 4;
+  CANCELLED = 5;
+  CHECKOUT = 6;
+  NEEDPAYMENT = 7;
+}
+
+message PlaceOrderReq {
+  string InvoiceId = 1;
+  string AddressId = 2;
+  message Notes {
+    string OrderId = 1;
+    string Note = 2;
+  }
+  repeated Notes OrderNotes = 3;
+}
+
+message CheckoutReq {
+  repeated string ShoppingCartId = 1;
+}
+
+message IdReq {
+  string Id = 1;
+}
+
+message AllCommodityDetails {
+  repeated CommodityDetail Commodities = 1;
+}
+
+message CommodityDetail {
+  string Id = 1;
+  string Name = 2;
+  string Image = 3;
+  string Description = 4;
+  google.protobuf.Timestamp CreatedAt = 5;
+  google.protobuf.Timestamp UpdatedAt = 6;
+  google.protobuf.Timestamp DeletedAt = 7;
+}
+
+message AllProductDetails {
+  repeated ProductDetail Products = 1;
+}
+
+message ProductDetail {
+  string Id = 1;
+  string Name = 2;
+  string Description = 3;
+  string Price = 4;
+  int32 AvailableStock = 5;
+  int32 Sold = 6;
+  string CommodityId = 7;
+  string AreaId = 8;
+  string SellerId = 9;
+  repeated string Image = 10;
+  google.protobuf.Timestamp CreatedAt = 11;
+  google.protobuf.Timestamp UpdatedAt = 12;
+  google.protobuf.Timestamp DeletedAt = 13;
+}
+
+message PriceRange {
+  string minValue = 1;
+  string maxValue = 2;
+}
+message Query {
+  string Query = 1;
+}
+
+message AllShoppingCartDetail {
+  repeated ShoppingCartDetail ShoppingCarts = 1;
+}
+
+message ShoppingCartDetail {
+  string Id = 1;
+  int32 Amount = 2;
+  int64 FinalPrice = 3;
+  ProductDetail Product = 4;
+  google.protobuf.Timestamp CreatedAt = 5;
+  google.protobuf.Timestamp UpdatedAt = 6;
+  google.protobuf.Timestamp DeletedAt = 7;
+}
+
+message AllOrderDetail {
+  repeated OrderDetail Orders = 1;
+}
+
+message OrderDetail {
+  string Id = 1;
+  string Notes = 2;
+  int64 DeliveryPrice = 3;
+  int64 TotalPrice = 4;
+  string Address = 5;
+  OrderStatus Status = 6;
+  repeated ShoppingCartDetail ShoppingCarts = 7;
+  google.protobuf.Timestamp CreatedAt = 8;
+  google.protobuf.Timestamp UpdatedAt = 9;
+  google.protobuf.Timestamp DeletedAt = 10;
+}
+
+message AllInvoiceDetail {
+  repeated InvoiceDetail Invoices = 1;
+}
+
+message InvoiceDetail {
+  string Id = 1;
+  int64 TotalPrice = 2;
+  InvoiceStatus Status = 3;
+  repeated OrderDetail Orders = 4;
+  google.protobuf.Timestamp CreatedAt = 5;
+  google.protobuf.Timestamp UpdatedAt = 6;
+  google.protobuf.Timestamp DeletedAt = 7;
+}
+

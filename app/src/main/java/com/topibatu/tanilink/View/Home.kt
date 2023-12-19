@@ -5,6 +5,7 @@ import android.Manifest
 import android.annotation.SuppressLint
 import android.os.Build
 import android.widget.Toast
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -76,6 +77,7 @@ import com.google.firebase.messaging.ktx.messaging
 import com.orhanobut.hawk.Hawk
 import com.topibatu.tanilink.R
 import com.topibatu.tanilink.Util.Account
+import com.topibatu.tanilink.Util.Marketplace
 import com.topibatu.tanilink.Util.Photo
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
@@ -83,34 +85,18 @@ import androidx.compose.material3.IconButton as IconButton
 import com.topibatu.tanilink.View.components.BottomBar
 import com.topibatu.tanilink.View.components.FirebaseMessagingNotificationPermissionDialog
 import io.grpc.StatusException
+import marketplace_proto.MarketplaceProto
+import marketplace_proto.MarketplaceProto.CommodityDetail
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalPermissionsApi::class)
 @Composable
 fun HomePage(navController: NavController) {
-
-    // TODO: FIX SCROLL, ENHANCE BOTTOM NAV, SEPARATE TOP AND BOTTOM NAV INTO DIFFERENT FILES
     val accountRPC = remember { Account() }
+    val marketPlaceRPC = remember { Marketplace() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
-
-    val getProfileRes = remember { mutableStateOf<AccountProto.AccountDetail?>(null) }
-
-    // Get Profile
-    LaunchedEffect(null) {
-        getProfileRes.value = try {
-            accountRPC.getProfile()
-        } catch (e: StatusException) {
-            Toast.makeText(
-                context,
-                "Get Profile Failed: ${e.status.description}",
-                Toast.LENGTH_SHORT
-            ).show()
-            null
-        }
-    }
-
-    val profileName = getProfileRes.value?.fullName ?: "..."
 
     // Firebase Cloud Messaging (Notification Service)
     val showNotificationDialog = remember { mutableStateOf(false) }
@@ -121,13 +107,44 @@ fun HomePage(navController: NavController) {
         showNotificationDialog = showNotificationDialog,
         notificationPermissionState = notificationPermissionState
     )
-    LaunchedEffect(key1=Unit){
+
+    val getProfileRes = remember { mutableStateOf<AccountProto.AccountDetail?>(null) }
+    val getCommoditiesRes = remember { mutableStateOf<MarketplaceProto.AllCommodityDetails?>(null) }
+
+    LaunchedEffect(null) {
+        // Get Profile
+        getProfileRes.value = try {
+            accountRPC.getProfile()
+        } catch (e: StatusException) {
+            Toast.makeText(
+                context,
+                "Get Profile Failed: ${e.status.description}",
+                Toast.LENGTH_SHORT
+            ).show()
+            null
+        }
+
+        // Get Commodities
+        getCommoditiesRes.value = try {
+            marketPlaceRPC.getAllCommodities()
+        } catch (e: StatusException) {
+            Toast.makeText(
+                context,
+                "Get All Commodities Failed: ${e.status.description}",
+                Toast.LENGTH_SHORT
+            ).show()
+            null
+        }
+
+        // Check Request Notification Permission
         if (notificationPermissionState.status.isGranted ||
             Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU
         ) {
             Firebase.messaging.subscribeToTopic("main")
         } else showNotificationDialog.value = true
     }
+
+    val profileName = getProfileRes.value?.fullName ?: "..."
 
     Scaffold(
         topBar = {
@@ -193,9 +210,11 @@ fun HomePage(navController: NavController) {
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 16.dp)
             ) {
-                itemsIndexed(images) { index, imageUrl ->
-                    ProductCard(navController = navController, imageUrl = imageUrl)
-                    Spacer(modifier = Modifier.width(18.dp))
+                getCommoditiesRes.value?.let {
+                    itemsIndexed(it.commoditiesList) { index, commodity ->
+                        ProductCard(navController = navController, commodity = commodity)
+                        Spacer(modifier = Modifier.width(18.dp))
+                    }
                 }
             }
 
@@ -248,7 +267,7 @@ private fun CarouselSlider(images: List<String>) {
 }
 
 @Composable
-private fun ProductCard(navController: NavController, imageUrl: String) {
+private fun ProductCard(navController: NavController, commodity: CommodityDetail) {
     ElevatedCard(
         elevation = CardDefaults.cardElevation(
             defaultElevation = 6.dp
@@ -256,11 +275,11 @@ private fun ProductCard(navController: NavController, imageUrl: String) {
         modifier = Modifier
             .size(width = 125.dp, height = 125.dp)
             .clickable {
-                navController.navigate("category_list")
+                navController.navigate("category_list/${commodity.id}")
             }
     ) {
         AsyncImage(
-            model = imageUrl,
+            model = commodity.image,
             contentDescription = "Image",
             contentScale = ContentScale.FillBounds,
             modifier = Modifier
@@ -283,13 +302,14 @@ private fun TopBar(navController: NavController) {
         verticalAlignment = Alignment.CenterVertically
     ) {
         SearchBar(
-            query = text,//text showed on SearchBar
+            query = text, //text showed on SearchBar
             modifier = Modifier.weight(1f),
             onQueryChange = {
                 text = it
             },
             onSearch = {
                 active = false
+                navController.navigate("category_list/query:$it")
             },
             active = active,
             onActiveChange = {

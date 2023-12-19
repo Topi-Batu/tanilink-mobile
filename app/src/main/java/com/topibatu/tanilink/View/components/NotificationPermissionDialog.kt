@@ -1,11 +1,14 @@
 package com.topibatu.tanilink.View.components
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.MutableState
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.core.R
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -29,7 +32,7 @@ fun FirebaseMessagingNotificationPermissionDialog(
             text = { Text(text = "Please allow this app to send you a notification") },
             icon = {
                 Icon(
-                    painter = painterResource(id = R.drawable.notification_template_icon_bg),
+                    imageVector = Icons.Filled.Notifications,
                     contentDescription = null
                 )
             },
@@ -40,6 +43,11 @@ fun FirebaseMessagingNotificationPermissionDialog(
                     Firebase.messaging.subscribeToTopic("main")
                 }) {
                     Text(text = "OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showNotificationDialog.value = false }) {
+                    Text(text = "Cancel", color = Color.Red)
                 }
             }
         )
