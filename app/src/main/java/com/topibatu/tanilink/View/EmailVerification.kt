@@ -1,5 +1,6 @@
 package com.topibatu.tanilink.View
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -45,6 +47,7 @@ import io.grpc.StatusException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EmailVerificationPage(navController: NavController) {
@@ -62,124 +65,124 @@ fun EmailVerificationPage(navController: NavController) {
     var times by remember { mutableStateOf(60) }
     var timeLeft by remember { mutableStateOf(0) }
 
+    Scaffold {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            Arrangement.Center,
+            Alignment.CenterHorizontally
+        ) {
+            // Title
+            Text(text = "Email Verify Status", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        Arrangement.Center,
-        Alignment.CenterHorizontally
-    ) {
-        // Title
-        Text(text = "Email Verify Status", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Texts
-        Text(
-            text = "We sent an email to \n" +
-                    "${email}", fontSize = 16.sp
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Text(
-            text = "Please check your email! \n" +
-                    "If you don’t see it, you may need to \n" +
-                    "check your spam folder.",
-            fontSize = 12.sp,
-            lineHeight = 14.sp,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(42.dp))
-
-        Text(
-            text = "Still can’t find the email? No problem.",
-            fontSize = 12.sp,
-            lineHeight = 14.sp,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Button
-        Button(onClick = {
-            scope.launch {
-
-                isEmailVerifiedRes.value = try {
-                    accountRPC.isEmailConfirmed(
-                        email = email
-                    )
-                } catch (e: StatusException) {
-                    Toast.makeText(
-                        context,
-                        "Email is not verified: ${e.status.description}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    null
-                }
-            }
-        }) {
-            Text(text = "Check")
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-
-        // Check if there is cooldown
-        if (timeLeft == 0) { // No cooldown
+            // Texts
             Text(
-                text = "Resent Verification Email",
-                modifier = Modifier.clickable {
-                    scope.launch {
+                text = "We sent an email to \n" +
+                        "${email}", fontSize = 16.sp
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
-                        resendVerificationEmailRes.value = try {
-                            accountRPC.resendVerificationEmail(
-                                email = email
-                            )
-                        } catch (e: StatusException) {
-                            Toast.makeText(
-                                context,
-                                "Email is not verified: ${e.status.description}",
-                                Toast.LENGTH_SHORT
-                            ).show()
-                            null
-                        }
+            Text(
+                text = "Please check your email! \n" +
+                        "If you don’t see it, you may need to \n" +
+                        "check your spam folder.",
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(42.dp))
 
-                        // Add Cooldown
-                        timeLeft = times
-                        while (timeLeft > 0) {
-                            delay(1000L)
-                            timeLeft--
-                        }
+            Text(
+                text = "Still can’t find the email? No problem.",
+                fontSize = 12.sp,
+                lineHeight = 14.sp,
+                textAlign = TextAlign.Center
+            )
+            Spacer(modifier = Modifier.height(8.dp))
 
+            // Button
+            Button(onClick = {
+                scope.launch {
+
+                    isEmailVerifiedRes.value = try {
+                        accountRPC.isEmailConfirmed(
+                            email = email
+                        )
+                    } catch (e: StatusException) {
+                        Toast.makeText(
+                            context,
+                            "Email is not verified: ${e.status.description}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        null
                     }
                 }
-            )
-        } else { // Cooldown
-            Text(text = "Resent Verification Email in $timeLeft seconds")
-        }
+            }) {
+                Text(text = "Check")
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Check if there is cooldown
+            if (timeLeft == 0) { // No cooldown
+                Text(
+                    text = "Resent Verification Email",
+                    modifier = Modifier.clickable {
+                        scope.launch {
+
+                            resendVerificationEmailRes.value = try {
+                                accountRPC.resendVerificationEmail(
+                                    email = email
+                                )
+                            } catch (e: StatusException) {
+                                Toast.makeText(
+                                    context,
+                                    "Email is not verified: ${e.status.description}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                null
+                            }
+
+                            // Add Cooldown
+                            timeLeft = times
+                            while (timeLeft > 0) {
+                                delay(1000L)
+                                timeLeft--
+                            }
+
+                        }
+                    }
+                )
+            } else { // Cooldown
+                Text(text = "Resent Verification Email in $timeLeft seconds")
+            }
 
 
-        // If email is verified
-        isEmailVerifiedRes.value?.let { response ->
-            Toast.makeText(
-                context,
-                "Your Email Is Verified",
-                Toast.LENGTH_SHORT
-            ).show()
+            // If email is verified
+            isEmailVerifiedRes.value?.let { response ->
+                Toast.makeText(
+                    context,
+                    "Your Email Is Verified",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-            LaunchedEffect(response) {
-                delay(2500) // Delay for 2 seconds
-                navController.navigate("login")
+                LaunchedEffect(response) {
+                    delay(2500) // Delay for 2 seconds
+                    navController.navigate("login")
+                }
+            }
+
+            // If resend email verification success
+            resendVerificationEmailRes.value?.let { response ->
+                Toast.makeText(
+                    context,
+                    "New Verification Email Has Been Sent",
+                    Toast.LENGTH_SHORT
+                ).show()
+                resendVerificationEmailRes.value = null
             }
         }
-
-        // If resend email verification success
-        resendVerificationEmailRes.value?.let { response ->
-            Toast.makeText(
-                context,
-                "New Verification Email Has Been Sent",
-                Toast.LENGTH_SHORT
-            ).show()
-            resendVerificationEmailRes.value = null
-        }
-
-
     }
+
 
     BoxWithConstraints(
         modifier = Modifier

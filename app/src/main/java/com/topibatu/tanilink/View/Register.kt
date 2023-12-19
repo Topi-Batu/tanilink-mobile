@@ -38,6 +38,7 @@ import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberDatePickerState
@@ -76,7 +77,7 @@ import java.util.Date
 
 @OptIn(ExperimentalComposeUiApi::class)
 @RequiresApi(Build.VERSION_CODES.O)
-@SuppressLint("RememberReturnType")
+@SuppressLint("RememberReturnType", "UnusedMaterial3ScaffoldPaddingParameter")
 @ExperimentalMaterial3Api
 @Composable
 fun RegisterPage(navController: NavController) {
@@ -103,169 +104,172 @@ fun RegisterPage(navController: NavController) {
 
     val registerRes = remember { mutableStateOf<RegisterRes?>(null) }
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        Arrangement.Center,
-        Alignment.CenterHorizontally
-    ) {
-        // Title
-        Text(text = "Sign Up", fontSize = 24.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Text Field
-        OutlinedTextField(
-            value = nameState.value,
-            placeholder = { Text("Full Name") },
-            singleLine = true,
-            onValueChange = {
-                nameState.value = it.take(15)
-            })
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = emailState.value,
-            placeholder = { Text("Email") },
-            singleLine = true,
-            onValueChange = {
-                emailState.value = it
-            })
-        Spacer(modifier = Modifier.height(8.dp))
-
-        OutlinedTextField(
-            value = phoneNumberState.value,
-            placeholder = { Text("Phone Number") },
-            singleLine = true,
-            onValueChange = { phoneNumberState.value = it },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
-            OutlinedTextField(
-                value = genderState,
-                onValueChange = {},
-                readOnly = true,
-                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
-                modifier = Modifier.menuAnchor()
-            )
-
-            ExposedDropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false }
-            ) {
-                genderList.forEach { item ->
-                    DropdownMenuItem(
-                        text = { Text(text = item) },
-                        onClick = {
-                            genderState = item
-                            expanded = false
-                        }
-                    )
-                }
-            }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Box(
-            contentAlignment = Alignment.Center,
-            modifier = Modifier.clickable(onClick = {
-                showDatePicker = true
-            })
+    Scaffold {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            Arrangement.Center,
+            Alignment.CenterHorizontally
         ) {
+            // Title
+            Text(text = "Sign Up", fontSize = 24.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Text Field
             OutlinedTextField(
-                value = date,
-                placeholder = { Text("Date of Birth") },
-                enabled = false,
-                colors = OutlinedTextFieldDefaults.colors(
-                    disabledTextColor = MaterialTheme.colorScheme.onSurface,
-                    disabledContainerColor = Color.Transparent,
-                    disabledBorderColor = MaterialTheme.colorScheme.outline,
-                    disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
-                    disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
-                    disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
-                ),
-                onValueChange = { },
+                value = nameState.value,
+                placeholder = { Text("Full Name") },
+                singleLine = true,
+                onValueChange = {
+                    nameState.value = it.take(15)
+                })
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = emailState.value,
+                placeholder = { Text("Email") },
+                singleLine = true,
+                onValueChange = {
+                    emailState.value = it
+                })
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = phoneNumberState.value,
+                placeholder = { Text("Phone Number") },
+                singleLine = true,
+                onValueChange = { phoneNumberState.value = it },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
             )
-        }
-        if (showDatePicker) {
-            DatePickerDialogComponent(
-                datePattern = "MM/dd/yyyy",
-                onDateSelected = { date = it },
-                onDismiss = { showDatePicker = false }
-            )
-        }
-        Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-        OutlinedTextField(
-            value = passwordState.value,
-            placeholder = { Text("Password") },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            onValueChange = {
-                passwordState.value = it
-            })
-        Spacer(modifier = Modifier.height(8.dp))
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = !expanded }) {
+                OutlinedTextField(
+                    value = genderState,
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier.menuAnchor()
+                )
 
-        OutlinedTextField(
-            value = confirmPasswordState.value,
-            placeholder = { Text("Confirm Password") },
-            singleLine = true,
-            visualTransformation = PasswordVisualTransformation(),
-            onValueChange = {
-                confirmPasswordState.value = it
-            })
-        Spacer(modifier = Modifier.height(8.dp))
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    genderList.forEach { item ->
+                        DropdownMenuItem(
+                            text = { Text(text = item) },
+                            onClick = {
+                                genderState = item
+                                expanded = false
+                            }
+                        )
+                    }
+                }
+            }
+            Spacer(modifier = Modifier.height(8.dp))
 
-        // Button
-        Button(onClick = {
-            scope.launch {
-                registerRes.value = try {
-                    accountRPC.register(
-                        name = nameState.value,
-                        email = emailState.value,
-                        phoneNumber = phoneNumberState.value,
-                        gender = genderState,
-                        dateOfBirth = date,
-                        password = passwordState.value,
-                        confirmPassword = confirmPasswordState.value
-                    )
-                } catch (e: StatusException) {
-                    Toast.makeText(
-                        context,
-                        "Registration failed: ${e.status.description}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    null
+            Box(
+                contentAlignment = Alignment.Center,
+                modifier = Modifier.clickable(onClick = {
+                    showDatePicker = true
+                })
+            ) {
+                OutlinedTextField(
+                    value = date,
+                    placeholder = { Text("Date of Birth") },
+                    enabled = false,
+                    colors = OutlinedTextFieldDefaults.colors(
+                        disabledTextColor = MaterialTheme.colorScheme.onSurface,
+                        disabledContainerColor = Color.Transparent,
+                        disabledBorderColor = MaterialTheme.colorScheme.outline,
+                        disabledLeadingIconColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledTrailingIconColor = MaterialTheme.colorScheme.onSurface,
+                        disabledLabelColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledPlaceholderColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledSupportingTextColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledPrefixColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                        disabledSuffixColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    ),
+                    onValueChange = { },
+                )
+            }
+            if (showDatePicker) {
+                DatePickerDialogComponent(
+                    datePattern = "MM/dd/yyyy",
+                    onDateSelected = { date = it },
+                    onDismiss = { showDatePicker = false }
+                )
+            }
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = passwordState.value,
+                placeholder = { Text("Password") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                onValueChange = {
+                    passwordState.value = it
+                })
+            Spacer(modifier = Modifier.height(8.dp))
+
+            OutlinedTextField(
+                value = confirmPasswordState.value,
+                placeholder = { Text("Confirm Password") },
+                singleLine = true,
+                visualTransformation = PasswordVisualTransformation(),
+                onValueChange = {
+                    confirmPasswordState.value = it
+                })
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // Button
+            Button(onClick = {
+                scope.launch {
+                    registerRes.value = try {
+                        accountRPC.register(
+                            name = nameState.value,
+                            email = emailState.value,
+                            phoneNumber = phoneNumberState.value,
+                            gender = genderState,
+                            dateOfBirth = date,
+                            password = passwordState.value,
+                            confirmPassword = confirmPasswordState.value
+                        )
+                    } catch (e: StatusException) {
+                        Toast.makeText(
+                            context,
+                            "Registration failed: ${e.status.description}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        null
+                    }
+
                 }
 
+            }) {
+                Text(text = "Register")
             }
 
-        }) {
-            Text(text = "Register")
-        }
+            // If Register Success
+            registerRes.value?.let { response ->
+                Toast.makeText(
+                    context,
+                    "Check Your Email Address Box",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-        // If Register Success
-        registerRes.value?.let { response ->
-            Toast.makeText(
-                context,
-                "Check Your Email Address Box",
-                Toast.LENGTH_SHORT
-            ).show()
+                // Save Session
+                Hawk.put("email", response.account.email);
 
-            // Save Session
-            Hawk.put("email", response.account.email);
-
-            LaunchedEffect(response) {
-                delay(2500) // Delay for 2 seconds
-                navController.navigate("email_verification")
+                LaunchedEffect(response) {
+                    delay(2500) // Delay for 2 seconds
+                    navController.navigate("email_verification")
+                }
             }
-        }
 
+        }
     }
+
 
     BoxWithConstraints(
         modifier = Modifier

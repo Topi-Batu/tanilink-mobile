@@ -235,7 +235,7 @@ fun ProfilePage(navController: NavController) {
                             uri?.let {
                                 // Upload image to firebase
                                 val imageUrl =
-                                    photoServices.uploadToStorage(it, context, "image").await()
+                                    photoServices.uploadToStorage(it, context, Photo.Path.PhotoProfile).await()
                                 pictureUrl.value = imageUrl
                             }
 

@@ -1,6 +1,8 @@
 package com.topibatu.tanilink.View
 
 import account_proto.AccountProto.LoginRes
+import android.annotation.SuppressLint
+import android.view.Window
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -20,6 +22,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -39,6 +42,9 @@ import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import com.orhanobut.hawk.Hawk
@@ -49,6 +55,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import org.intellij.lang.annotations.JdkConstants.HorizontalAlignment
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoginPage(navController: NavController) {
@@ -67,106 +74,108 @@ fun LoginPage(navController: NavController) {
         navController.navigate("home")
     }
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        Arrangement.Center,
-        Alignment.CenterHorizontally
-    ) {
-        // Title
-        Text(text = "Login", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Text Field
-        OutlinedTextField(
-            value = emailState.value,
-            placeholder = { Text("Email") },
-            onValueChange = {
-                emailState.value = it
-            })
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = passwordState.value,
-            placeholder = { Text("Password") },
-            visualTransformation = PasswordVisualTransformation(),
-            onValueChange = {
-                passwordState.value = it
-            })
-        Spacer(modifier = Modifier.height(12.dp))
-
-        // Forget Password
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 40.dp),
-            horizontalArrangement = Arrangement.End,
-        ) {
-            Text(
-                text = "Forget Password?",
-                modifier = Modifier.clickable {
-                    navController.navigate("forgot_password")
-                }
-            )
-        }
-        Spacer(modifier = Modifier.height(16.dp))
-
-        // Button
-        Button(onClick = {
-            scope.launch {
-
-                loginRes.value = try {
-                    accountRPC.login(
-                        email = emailState.value,
-                        password = passwordState.value
-                    )
-                } catch (e: StatusException) {
-                    Toast.makeText(
-                        context,
-                        "Login failed: ${e.status.description}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    null
-                }
-            }
-        }) {
-            Text(text = "Login")
-        }
-
-        // Don't have an Acocunt?
-        Spacer(modifier = Modifier.height(32.dp))
+    Scaffold {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally,
-            modifier = Modifier
-                .clickable {
-                    navController.navigate("sign_up")
-                }
+            modifier = Modifier.fillMaxSize(),
+            Arrangement.Center,
+            Alignment.CenterHorizontally
         ) {
-            Text(
-                text = "Don't Have an Account?",
-                color = Color.Gray,
-            )
-            Text(
-                text = "Sign Up",
-                color = Color.Gray,
-                textDecoration = TextDecoration.Underline
-            )
-        }
+            // Title
+            Text(text = "Login", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(16.dp))
 
-        // If Login Success
-        loginRes.value?.let { response ->
-            Toast.makeText(
-                context,
-                "Login Success",
-                Toast.LENGTH_SHORT
-            ).show()
+            // Text Field
+            OutlinedTextField(
+                value = emailState.value,
+                placeholder = { Text("Email") },
+                onValueChange = {
+                    emailState.value = it
+                })
+            Spacer(modifier = Modifier.height(16.dp))
 
-            // Save Session
-            Hawk.put("user-id", response.account.id);
-            Hawk.put("access-token", response.tokens.accessToken);
+            OutlinedTextField(
+                value = passwordState.value,
+                placeholder = { Text("Password") },
+                visualTransformation = PasswordVisualTransformation(),
+                onValueChange = {
+                    passwordState.value = it
+                })
+            Spacer(modifier = Modifier.height(12.dp))
 
-            LaunchedEffect(response) {
-                delay(500) // Delay for 0.5 seconds
-                navController.navigate("home")
+            // Forget Password
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 40.dp),
+                horizontalArrangement = Arrangement.End,
+            ) {
+                Text(
+                    text = "Forget Password?",
+                    modifier = Modifier.clickable {
+                        navController.navigate("forgot_password")
+                    }
+                )
+            }
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Button
+            Button(onClick = {
+                scope.launch {
+
+                    loginRes.value = try {
+                        accountRPC.login(
+                            email = emailState.value,
+                            password = passwordState.value
+                        )
+                    } catch (e: StatusException) {
+                        Toast.makeText(
+                            context,
+                            "Login failed: ${e.status.description}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        null
+                    }
+                }
+            }) {
+                Text(text = "Login")
+            }
+
+            // Don't have an Acocunt?
+            Spacer(modifier = Modifier.height(32.dp))
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally,
+                modifier = Modifier
+                    .clickable {
+                        navController.navigate("sign_up")
+                    }
+            ) {
+                Text(
+                    text = "Don't Have an Account?",
+                    color = Color.Gray,
+                )
+                Text(
+                    text = "Sign Up",
+                    color = Color.Gray,
+                    textDecoration = TextDecoration.Underline
+                )
+            }
+
+            // If Login Success
+            loginRes.value?.let { response ->
+                Toast.makeText(
+                    context,
+                    "Login Success",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                // Save Session
+                Hawk.put("user-id", response.account.id);
+                Hawk.put("access-token", response.tokens.accessToken);
+
+                LaunchedEffect(response) {
+                    delay(500) // Delay for 0.5 seconds
+                    navController.navigate("home")
+                }
             }
         }
     }

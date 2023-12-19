@@ -1,5 +1,6 @@
 package com.topibatu.tanilink.View
 
+import android.annotation.SuppressLint
 import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable
@@ -19,6 +20,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -47,6 +49,7 @@ import io.grpc.StatusException
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ForgotPassword(navController: NavController) {
@@ -59,70 +62,73 @@ fun ForgotPassword(navController: NavController) {
     val context = LocalContext.current
     val forgotPasswordRes = remember { mutableStateOf<Empty?>(null) }
 
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        Arrangement.Center,
-        Alignment.CenterHorizontally
-    ) {
-        // Title
-        Text(text = "Forgot Password", fontSize = 32.sp, fontWeight = FontWeight.Bold)
-        Spacer(modifier = Modifier.height(2.dp))
-
-        // Description
+    Scaffold {
         Column(
-            horizontalAlignment = Alignment.CenterHorizontally
+            modifier = Modifier.fillMaxSize(),
+            Arrangement.Center,
+            Alignment.CenterHorizontally
         ) {
-            Text(text = "Please enter your email address to", fontSize = 15.sp)
-            Text(text = "receive verification code", fontSize = 15.sp)
-        }
-        Spacer(modifier = Modifier.height(42.dp))
+            // Title
+            Text(text = "Forgot Password", fontSize = 32.sp, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.height(2.dp))
 
-        // Text Field
-        OutlinedTextField(
-            value = emailState.value,
-            placeholder = { Text("Email") },
-            onValueChange = {
-                emailState.value = it
-            })
-        Spacer(modifier = Modifier.height(16.dp))
+            // Description
+            Column(
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                Text(text = "Please enter your email address to", fontSize = 15.sp)
+                Text(text = "receive verification code", fontSize = 15.sp)
+            }
+            Spacer(modifier = Modifier.height(42.dp))
 
-        // Button
-        Button(onClick = {
-            scope.launch {
+            // Text Field
+            OutlinedTextField(
+                value = emailState.value,
+                placeholder = { Text("Email") },
+                onValueChange = {
+                    emailState.value = it
+                })
+            Spacer(modifier = Modifier.height(16.dp))
 
-                forgotPasswordRes.value = try {
-                    accountRPC.forgotPassword(
-                        email = emailState.value.text
-                    )
-                } catch (e: StatusException) {
-                    Toast.makeText(
-                        context,
-                        "Failed: ${e.status.description}",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    null
+            // Button
+            Button(onClick = {
+                scope.launch {
+
+                    forgotPasswordRes.value = try {
+                        accountRPC.forgotPassword(
+                            email = emailState.value.text
+                        )
+                    } catch (e: StatusException) {
+                        Toast.makeText(
+                            context,
+                            "Failed: ${e.status.description}",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                        null
+                    }
+                }
+
+            }) {
+                Text(text = "Send")
+            }
+
+            // If Forget Password Request is Success
+            forgotPasswordRes.value?.let { response ->
+                Toast.makeText(
+                    context,
+                    "Forget Password Email Has Been Sent",
+                    Toast.LENGTH_SHORT
+                ).show()
+
+                LaunchedEffect(response) {
+                    delay(2500) // Delay for 2 seconds
+                    navController.navigate("login")
                 }
             }
 
-        }) {
-            Text(text = "Send")
         }
-
-        // If Forget Password Request is Success
-        forgotPasswordRes.value?.let { response ->
-            Toast.makeText(
-                context,
-                "Forget Password Email Has Been Sent",
-                Toast.LENGTH_SHORT
-            ).show()
-
-            LaunchedEffect(response) {
-                delay(2500) // Delay for 2 seconds
-                navController.navigate("login")
-            }
-        }
-
     }
+
 
     BoxWithConstraints(
         modifier = Modifier

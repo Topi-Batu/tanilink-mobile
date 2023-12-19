@@ -52,6 +52,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.topibatu.tanilink.View.components.BottomBar
+import com.topibatu.tanilink.View.components.ProductItem
 import com.topibatu.tanilink.View.components.TopBar
 import io.grpc.StatusException
 import kotlinx.coroutines.launch
@@ -153,7 +154,7 @@ fun CartPage(navController: NavController) {
                 .padding(start = 8.dp, end = 8.dp, top = 70.dp, bottom = 90.dp)
         ) {
             itemsIndexed(products) { index, product ->
-                ProductItem(product = product)
+                ProductItem(product = product, showCheckbox = true)
                 Divider(color = MaterialTheme.colorScheme.primary, thickness = 1.dp)
             }
         }
@@ -161,85 +162,3 @@ fun CartPage(navController: NavController) {
     }
 }
 
-@Composable
-private fun ProductItem(product: Product) {
-    val isCheckedLocal = remember { mutableStateOf(product.isChecked) }
-    val jumlahProductLocal = remember { mutableStateOf(product.jumlahProduk) }
-
-    Column(
-        modifier = Modifier.padding(top = 12.dp, bottom = 28.dp)
-    ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Checkbox(
-                checked = isCheckedLocal.value,
-                onCheckedChange = { isCheckedLocal.value = it }
-            )
-
-            Column {
-                Text(text = product.namaToko)
-                Spacer(modifier = Modifier.height(8.dp))
-                AsyncImage(
-                    model = product.fotoProduk,
-                    contentDescription = "Product Image",
-                    modifier = Modifier
-                        .size(88.dp)
-                        .clip(RoundedCornerShape(18.dp))
-                        .border(2.dp, Color.Gray, RoundedCornerShape(18.dp))
-                )
-            }
-            Spacer(modifier = Modifier.width(8.dp))
-
-            Column(
-                horizontalAlignment = Alignment.CenterHorizontally,
-                modifier = Modifier.weight(1f)
-            ) {
-                Button(
-                    modifier = Modifier
-                        .align(Alignment.End)
-                        .height(32.dp)
-                        .width(64.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = Color(255, 90, 90),
-                        contentColor = Color.White
-                    ),
-                    onClick = { /*TODO*/ }
-                ) {
-                    Icon(Icons.Filled.Delete, contentDescription = "Delete")
-                }
-                Spacer(modifier = Modifier.height(16.dp))
-
-                Text(text = product.namaProduk)
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Text(text = product.harga.toString())
-                Spacer(modifier = Modifier.height(8.dp))
-
-                Row(
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Button(
-                        modifier = Modifier
-                            .height(33.dp)
-                            .width(56.dp),
-                        onClick = { jumlahProductLocal.value-- }
-                    ) {
-                        Text(text = "-")
-                    }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(text = jumlahProductLocal.value.toString(), fontSize = 24.sp)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Button(
-                        modifier = Modifier
-                            .height(33.dp)
-                            .width(56.dp),
-                        onClick = { jumlahProductLocal.value++ }
-                    ) {
-                        Text(text = "+")
-                    }
-                }
-            }
-        }
-    }
-}
