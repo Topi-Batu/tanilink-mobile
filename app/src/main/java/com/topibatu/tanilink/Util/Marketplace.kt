@@ -5,7 +5,7 @@ import account_proto.AccountsGrpcKt
 import android.net.Uri
 import com.google.protobuf.Empty
 import com.orhanobut.hawk.Hawk
-import com.topibatu.tanilink.View.Product
+import com.topibatu.tanilink.View.OrderNotes
 import io.grpc.Metadata
 import io.grpc.StatusException
 import io.grpc.okhttp.OkHttpChannelBuilder
@@ -14,6 +14,7 @@ import marketplace_proto.MarketplaceProto
 import marketplace_proto.MarketplaceProto.AllCommodityDetails
 import marketplace_proto.MarketplaceProto.AllProductDetails
 import marketplace_proto.MarketplaceProto.IdReq
+import marketplace_proto.MarketplaceProto.ShoppingCartDetail
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 
@@ -85,5 +86,117 @@ class Marketplace() {
         }
     }
 
+    suspend fun addProductToShoppingCart(id: String): MarketplaceProto.AllShoppingCartDetail {
+        try {
+            val request = MarketplaceProto.IdReq.newBuilder()
+                .setId(id)
+                .build()
+            val response = marketplace.addProductToShoppingCart(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
 
+    suspend fun decreaseProductInShoppingCart(id: String): MarketplaceProto.AllShoppingCartDetail {
+        try {
+            val request = MarketplaceProto.IdReq.newBuilder()
+                .setId(id)
+                .build()
+            val response = marketplace.decreaseProductInShoppingCart(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun removeProductFromShoppingCart(id: String): MarketplaceProto.AllShoppingCartDetail {
+        try {
+            val request = MarketplaceProto.IdReq.newBuilder()
+                .setId(id)
+                .build()
+            val response = marketplace.removeProductFromShoppingCart(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun getUserShoppingCarts(): MarketplaceProto.AllShoppingCartDetail {
+        try {
+            val request = Empty.newBuilder().build()
+            val response = marketplace.getUserShoppingCarts(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+
+    suspend fun getUserInvoices(): MarketplaceProto.AllInvoiceDetail {
+        try {
+            val request = Empty.newBuilder().build()
+            val response = marketplace.getUserInvoices(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun getInvoiceById(invoiceId: String): MarketplaceProto.InvoiceDetail {
+        try {
+            val request = IdReq.newBuilder()
+                .setId(invoiceId)
+                .build()
+            val response = marketplace.getInvoiceById(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+    suspend fun checkout(shoppingCartIds: List<String>): MarketplaceProto.InvoiceDetail {
+        try {
+            val request = MarketplaceProto.CheckoutReq.newBuilder()
+                .addAllShoppingCartId(shoppingCartIds)
+                .build()
+            val response = marketplace.checkout(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
+
+
+    suspend fun placeOrder(invoiceId: String, addressId: String, orderNotes: List<OrderNotes>): MarketplaceProto.InvoiceDetail {
+        try {
+            val requestBuilder = MarketplaceProto.PlaceOrderReq.newBuilder()
+                .setInvoiceId(invoiceId)
+                .setAddressId(addressId)
+
+            for (orderNote in orderNotes) {
+                val editOrderNoteBuilder = MarketplaceProto.PlaceOrderReq.Notes.newBuilder()
+                    .setOrderId(orderNote.orderId)
+                    .setNote(orderNote.notes)
+                    .build()
+
+                requestBuilder.addOrderNotes(editOrderNoteBuilder)
+            }
+
+            val request = requestBuilder.build()
+
+            val response = marketplace.placeOrder(request, headers)
+            return response
+        } catch (e: StatusException) {
+            e.printStackTrace()
+            throw e
+        }
+    }
 }

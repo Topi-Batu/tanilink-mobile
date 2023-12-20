@@ -23,6 +23,7 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -110,23 +111,54 @@ fun ProductDetailPage(navController: NavController, productId: String) {
                 Spacer(modifier = Modifier.height(36.dp))
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    Column {
+                    Column(
+                        modifier = Modifier.weight(1f)
+                    ) {
                         // Nama Toko
                         Text(text = "Shop Name")
                         // Harga
                         Spacer(modifier = Modifier.height(8.dp))
                         Text(text = "Rp.${it.price}", fontWeight = FontWeight.Bold)
                     }
-                    Button(onClick = { /*TODO Belum Diisi*/ }) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Button(onClick = { /*TODO*/ }) {
                         Text(text = "Chat")
+                    }
+                    Spacer(modifier = Modifier.width(8.dp))
+                    // Add to Cart
+                    Button(onClick = {
+                        /* Add To Shopping Cart */
+                        scope.launch {
+                            try {
+                                marketPlaceRPC.addProductToShoppingCart(it.id)
+                                Toast.makeText(
+                                    context,
+                                    "Product Added to Shopping Cart",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            } catch (e: StatusException) {
+                                Toast.makeText(
+                                    context,
+                                    "Add Product to Cart Failed: ${e.status.description}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
+                    }) {
+                        Icon(
+                            imageVector = Icons.Filled.ShoppingCart,
+                            contentDescription = "Add to Cart"
+                        )
                     }
                 }
                 Spacer(modifier = Modifier.height(24.dp))
                 // Stock
-                Text(text = "Stock: ${it.availableStock}", fontWeight = FontWeight.SemiBold)
-                Spacer(modifier = Modifier.height(12.dp))
+                Text(
+                    text = "Stock: ${it.availableStock}",
+                    fontWeight = FontWeight.SemiBold,
+                )
+                Spacer(modifier = Modifier.height(18.dp))
                 Column(modifier = Modifier.fillMaxWidth(), horizontalAlignment = Alignment.Start) {
                     // Description
                     Text(text = "Description", fontWeight = FontWeight.Bold)

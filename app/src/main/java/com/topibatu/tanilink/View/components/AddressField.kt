@@ -101,7 +101,7 @@ fun AddressField(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Str
             ).show()
             null
         }
-
+        
         addressRes.value?.addressList?.forEachIndexed { index, addressDetail ->
             address.add(
                 Address(

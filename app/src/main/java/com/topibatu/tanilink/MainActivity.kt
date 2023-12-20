@@ -95,7 +95,13 @@ class MainActivity : ComponentActivity() {
                             }
                         }
                         composable("cart") { CartPage(navController = navController) }
-                        composable("cart_detail") { CartDetailPage(navController = navController) }
+                        composable("cart_detail/{invoiceId}") {
+                            val invoiceId = it.arguments?.getString("invoiceId")
+                            if (invoiceId != null) {
+                                CartDetailPage(navController = navController, invoiceId)
+                            }
+
+                        }
                     }
                 }
             }

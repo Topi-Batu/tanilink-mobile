@@ -1,6 +1,8 @@
 package com.topibatu.tanilink.View
 
+import account_proto.AccountProto
 import android.annotation.SuppressLint
+import android.widget.Toast
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -33,105 +35,146 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
+import com.topibatu.tanilink.Util.Account
+import com.topibatu.tanilink.Util.Marketplace
 import com.topibatu.tanilink.View.components.BottomBar
 import com.topibatu.tanilink.View.components.ProductItem
 import com.topibatu.tanilink.View.components.TopBar
+import io.grpc.StatusException
+import marketplace_proto.MarketplaceProto
+
+data class Address(
+    var id: String?,
+    var addressDetail: String
+)
+
+data class OrderNotes(
+    var orderId: String,
+    var notes: String,
+)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun CartDetailPage(navController: NavController) {
+fun CartDetailPage(navController: NavController, invoiceId: String) {
+    val accountRPC = remember { Account() }
+    val marketPlaceRPC = remember { Marketplace() }
+    val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
-    // tmp product data
-    val products: List<Product> = listOf<Product>(
-        Product(
-            namaToko = "Toko Satu Roda",
-            namaProduk = "Beras",
-            fotoProduk = "https://cdn.mos.cms.futurecdn.net/2aipAM72aBPS7Ny4L2MeNn-1200-80.jpg",
-            harga = 14000,
-            jumlahProduk = 4,
-            isChecked = false
-        ),
-        Product(
-            namaToko = "Toko Dua Roda",
-            namaProduk = "Cabai",
-            fotoProduk = "https://oyster.ignimgs.com/mediawiki/apis.ign.com/genshin-impact/f/f5/Hu_Tao_Birthday_Banner.png?width=1280",
-            harga = 14000,
-            jumlahProduk = 8,
-            isChecked = true
-        ),
-        Product(
-            namaToko = "Toko Tiga Roda",
-            namaProduk = "Semen",
-            fotoProduk = "https://media.suara.com/pictures/970x544/2022/10/09/72774-karakter-hu-tao-genshin-impact.jpg",
-            harga = 14000,
-            jumlahProduk = 38,
-            isChecked = false
-        ),
-        Product(
-            namaToko = "Toko Tiga Roda",
-            namaProduk = "Semen",
-            fotoProduk = "https://media.suara.com/pictures/970x544/2022/10/09/72774-karakter-hu-tao-genshin-impact.jpg",
-            harga = 14000,
-            jumlahProduk = 38,
-            isChecked = false
-        ),
-        Product(
-            namaToko = "Toko Tiga Roda",
-            namaProduk = "Semen",
-            fotoProduk = "https://media.suara.com/pictures/970x544/2022/10/09/72774-karakter-hu-tao-genshin-impact.jpg",
-            harga = 14000,
-            jumlahProduk = 38,
-            isChecked = false
-        ),
-        Product(
-            namaToko = "Toko Tiga Roda",
-            namaProduk = "Semen",
-            fotoProduk = "https://media.suara.com/pictures/970x544/2022/10/09/72774-karakter-hu-tao-genshin-impact.jpg",
-            harga = 14000,
-            jumlahProduk = 38,
-            isChecked = false
-        ),
-        Product(
-            namaToko = "Toko Tiga Roda",
-            namaProduk = "Semen",
-            fotoProduk = "https://media.suara.com/pictures/970x544/2022/10/09/72774-karakter-hu-tao-genshin-impact.jpg",
-            harga = 14000,
-            jumlahProduk = 38,
-            isChecked = false
-        ),
-    )
-
-    // Alamat Var
+    // Address Var
+    val getAddressRes = remember { mutableStateOf<AccountProto.AllAddressDetails?>(null) }
+    val address = remember { mutableStateListOf<Address>() }
     var expandedAddress by remember { mutableStateOf(false) }
-    val addressList = arrayOf("Alamat 1", "Alamat 2", "Alamat 3")
-    val addressState = remember { mutableStateOf(addressList[0]) }
+    val addressState = remember { mutableStateOf<Address?>(null) }
+
+    // Profile Var
+    val getProfileRes = remember { mutableStateOf<AccountProto.AccountDetail?>(null) }
+
+    // Invoice Var
+    val getInvoiceRes = remember { mutableStateOf<MarketplaceProto.InvoiceDetail?>(null) }
+
+    // Order Notes Var
+    val orderNotes = remember { mutableStateListOf<OrderNotes?>(null) }
+
+    LaunchedEffect(key1 = null) {
+        // Get User Profile
+        getProfileRes.value = try {
+            accountRPC.getProfile()
+        } catch (e: StatusException) {
+            Toast.makeText(
+                context,
+                "Get Profile Failed: ${e.status.description}",
+                Toast.LENGTH_SHORT
+            ).show()
+            null
+        }
+
+        // Get User Address
+        getAddressRes.value = try {
+            accountRPC.getAddress()
+        } catch (e: StatusException) {
+            Toast.makeText(
+                context,
+                "Get Address Failed: ${e.status.description}",
+                Toast.LENGTH_SHORT
+            ).show()
+            null
+        }
+
+        // Fill address value
+        getAddressRes.value?.addressList?.forEachIndexed { index, addressDetail ->
+            address.add(
+                Address(
+                    id = addressDetail.id,
+                    addressDetail = "${addressDetail.detail}, ${addressDetail.area.provinsi}, ${addressDetail.area.kota}, ${addressDetail.area.kecamatan}"
+                )
+            )
+        }
+        getAddressRes.value?.let {
+            addressState.value = address[0]
+        }
+
+        // Get Invoices
+        getInvoiceRes.value = try {
+            marketPlaceRPC.getInvoiceById(invoiceId)
+        } catch (e: StatusException) {
+            Toast.makeText(
+                context,
+                "Get User Invoices Failed: ${e.status.description}",
+                Toast.LENGTH_SHORT
+            ).show()
+            null
+        }
+
+        // Fill Order Notes
+        getInvoiceRes.value?.let {
+            it.ordersList.forEach { orderDetail ->
+                orderNotes.add(
+                    OrderNotes(
+                        orderId = orderDetail.id,
+                        notes = orderDetail.notes
+                    )
+                )
+            }
+        }
+
+    }
+
 
     Scaffold(
         topBar = {
             TopBar(navController, "Cart Detail")
         },
     ) {
-        Column (
+        Column(
             modifier = Modifier.padding(top = 78.dp, start = 16.dp, end = 16.dp)
         ) {
             // Text Nama User
-            Text(text = "Nama User", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = getProfileRes.value?.fullName ?: "NULL",
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.height(8.dp))
 
             // Dropdown Alamat
@@ -140,7 +183,7 @@ fun CartDetailPage(navController: NavController) {
                 onExpandedChange = { expandedAddress = !expandedAddress },
             ) {
                 OutlinedTextField(
-                    value = addressState.value,
+                    value = addressState.value?.addressDetail ?: "NULL",
                     onValueChange = {},
                     label = { Text("Alamat") },
                     readOnly = true,
@@ -155,9 +198,9 @@ fun CartDetailPage(navController: NavController) {
                     expanded = expandedAddress,
                     onDismissRequest = { expandedAddress = false }
                 ) {
-                    addressList.forEach { item ->
+                    address.forEach { item ->
                         DropdownMenuItem(
-                            text = { Text(text = item) },
+                            text = { Text(text = item.addressDetail) },
                             onClick = {
                                 addressState.value = item
                                 expandedAddress = false
@@ -168,40 +211,59 @@ fun CartDetailPage(navController: NavController) {
             }
             Spacer(modifier = Modifier.height(8.dp))
 
-            // ProductItems
-            LazyVerticalGrid(
-                columns = GridCells.Adaptive(minSize = LocalConfiguration.current.screenWidthDp.dp),
-                verticalArrangement = Arrangement.spacedBy(8.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(LocalConfiguration.current.screenHeightDp.dp / 1.85f)
-                    .padding(start = 8.dp, end = 8.dp)
-            ) {
-                itemsIndexed(products) { index, product ->
-                    ProductItem(product = product, showCheckbox = false)
-                    Divider(color = MaterialTheme.colorScheme.primary, thickness = 1.dp)
+            getInvoiceRes.value?.let {
+                var biayaItem: Long = 0
+                var ongkosKirim: Long = 0
+                var totalPembayaran = it.totalPrice
+
+                // ProductItems
+                LazyVerticalGrid(
+                    columns = GridCells.Adaptive(minSize = LocalConfiguration.current.screenWidthDp.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(LocalConfiguration.current.screenHeightDp.dp / 1.85f)
+                        .padding(start = 8.dp, end = 8.dp)
+                ) {
+                    it.ordersList.forEach { orderDetail ->
+                        // Hitung Total Ongkos Kirim
+                        ongkosKirim += orderDetail.deliveryPrice
+
+                        itemsIndexed(orderDetail.shoppingCartsList) { index, shoppingCart ->
+                            ProductItem(
+                                shoppingCart = shoppingCart,
+                                showButton = false,
+                                isChecked = null,
+                                onCheckboxStateChanged = { null })
+                        }
+                    }
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+
+                // Informasi Pembayaran
+                biayaItem = totalPembayaran - ongkosKirim
+                Column {
+                    Text(text = "Informasi Pembayaran", fontWeight = FontWeight.ExtraBold)
+                    Text(text = "Biaya Item: Rp. $biayaItem")
+                    Text(text = "Biaya Ongkos Kirim: Rp. $ongkosKirim")
+                    Text(
+                        text = "Total Pembayaran: Rp. $totalPembayaran",
+                        fontWeight = FontWeight.SemiBold
+                    )
+                }
+
+                Spacer(modifier = Modifier.height(16.dp))
+
+                // Button Bayar
+                Button(
+                    modifier = Modifier.align(Alignment.CenterHorizontally),
+                    onClick = {
+                        /* TODO: PlaceOrder */
+                    }
+                ) {
+                    Text(text = "Bayar")
                 }
             }
-            Spacer(modifier = Modifier.height(8.dp))
-
-            // Informasi Pembayaran
-            Column {
-                Text(text = "Informasi Pembayaran", fontWeight = FontWeight.ExtraBold)
-                Text(text = "Biaya Item: Rp. {BIAYA-ITEM}")
-                Text(text = "Biaya Ongkos Kirim: Rp. {BIAYA-ONGKIR}")
-                Text(text = "Total Pembayaran: Rp. {BIAYA-TOTAL}", fontWeight = FontWeight.SemiBold)
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Button Bayar
-            Button(
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                onClick = { /*TODO*/ }
-            ) {
-                Text(text = "Bayar")
-            }
-
 
         }
 

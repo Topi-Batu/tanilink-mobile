@@ -125,7 +125,9 @@ fun CategoryListPage(navController: NavController, param: String) {
                             Spacer(modifier = Modifier.height(8.dp))
                             Text(text = "Rp. ${product.price}", fontWeight = FontWeight.Bold)
                             Spacer(modifier = Modifier.height(8.dp))
-                            Button(onClick = { /*TODO*/ }) {
+                            Button(onClick = {
+                                navController.navigate("product_detail/${product.id}")
+                            }) {
                                 Text(text = "Buy")
                             }
                         }
