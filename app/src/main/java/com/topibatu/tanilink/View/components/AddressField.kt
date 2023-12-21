@@ -3,6 +3,7 @@ package com.topibatu.tanilink.View.components
 import account_proto.AccountProto
 import account_proto.AccountProto.AreaDetail
 import android.R
+import android.annotation.SuppressLint
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.BorderStroke
@@ -37,7 +38,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
@@ -76,6 +79,7 @@ data class Address(
     var addressDetail: String
 )
 
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddressField(value: String, setShowDialog: (Boolean) -> Unit, setValue: (String) -> Unit) {
@@ -101,7 +105,7 @@ fun AddressField(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Str
             ).show()
             null
         }
-        
+
         addressRes.value?.addressList?.forEachIndexed { index, addressDetail ->
             address.add(
                 Address(
@@ -128,7 +132,7 @@ fun AddressField(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Str
     Dialog(onDismissRequest = { setShowDialog(false) }) {
         Surface(
             shape = RoundedCornerShape(16.dp),
-            color = Color.White
+            color = MaterialTheme.colorScheme.surface
         ) {
             Box(
                 contentAlignment = Alignment.Center
@@ -244,11 +248,13 @@ fun AddressField(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Str
                                                         addressRes.value = try {
                                                             accountRPC.getAddress()
                                                         } catch (e: StatusException) {
-                                                            Toast.makeText(
-                                                                context,
-                                                                "Get Address Failed: ${e.status.description}",
-                                                                Toast.LENGTH_SHORT
-                                                            ).show()
+                                                            Toast
+                                                                .makeText(
+                                                                    context,
+                                                                    "Get Address Failed: ${e.status.description}",
+                                                                    Toast.LENGTH_SHORT
+                                                                )
+                                                                .show()
                                                             null
                                                         }
                                                         address.removeAll(address)
@@ -262,17 +268,21 @@ fun AddressField(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Str
                                                             )
                                                         }
 
-                                                        Toast.makeText(
-                                                            context,
-                                                            "Address Deleted",
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
+                                                        Toast
+                                                            .makeText(
+                                                                context,
+                                                                "Address Deleted",
+                                                                Toast.LENGTH_SHORT
+                                                            )
+                                                            .show()
                                                     } catch (e: StatusException) {
-                                                        Toast.makeText(
-                                                            context,
-                                                            "Update Address Failed: ${e.status.description}",
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
+                                                        Toast
+                                                            .makeText(
+                                                                context,
+                                                                "Update Address Failed: ${e.status.description}",
+                                                                Toast.LENGTH_SHORT
+                                                            )
+                                                            .show()
                                                     }
                                                 }
                                             }
@@ -291,7 +301,7 @@ fun AddressField(value: String, setShowDialog: (Boolean) -> Unit, setValue: (Str
                         Button(
                             onClick = {
                                 /* Add Address */
-                                address.add(Address(null, null, ""))
+                                address.add(Address(null, areaRes.value?.areaList!![0], ""))
                             },
                             shape = RoundedCornerShape(50.dp),
                             modifier = Modifier

@@ -170,8 +170,10 @@ fun HomePage(navController: NavController) {
     ) {
         val images = listOf(
             "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner1.png?alt=media&token=985a3e0b-8773-4c84-afae-bcd7c01e695d",
-            "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner2.png?alt=media&token=7dfaf44f-225b-41c0-9c46-aa3f267d561d",
-            "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner3.png?alt=media&token=70e0d942-b816-45ab-9f72-21417d0b9829",
+            "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner1.png?alt=media&token=985a3e0b-8773-4c84-afae-bcd7c01e695d",
+            "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner1.png?alt=media&token=985a3e0b-8773-4c84-afae-bcd7c01e695d",
+            "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner1.png?alt=media&token=985a3e0b-8773-4c84-afae-bcd7c01e695d",
+            "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fbanner1.png?alt=media&token=985a3e0b-8773-4c84-afae-bcd7c01e695d",
         )
 
         Column(

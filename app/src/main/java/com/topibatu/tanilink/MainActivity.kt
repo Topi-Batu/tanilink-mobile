@@ -28,6 +28,7 @@ import com.topibatu.tanilink.View.EmailVerificationPage
 import com.topibatu.tanilink.View.ForgotPassword
 import com.topibatu.tanilink.View.HomePage
 import com.topibatu.tanilink.View.LoginPage
+import com.topibatu.tanilink.View.PaymentPage
 import com.topibatu.tanilink.View.PredictionPage
 import com.topibatu.tanilink.View.ProductDetailPage
 import com.topibatu.tanilink.View.ProfilePage
@@ -100,8 +101,9 @@ class MainActivity : ComponentActivity() {
                             if (invoiceId != null) {
                                 CartDetailPage(navController = navController, invoiceId)
                             }
-
                         }
+                        // TODO: Payment In App Later
+                        // composable("payment") { PaymentPage(navController = navController) }
                     }
                 }
             }

@@ -1,5 +1,6 @@
 /build/*
 google-services.json
 
-#!build/outputs
+# Add Outputs .APK File
+!build/outputs
 

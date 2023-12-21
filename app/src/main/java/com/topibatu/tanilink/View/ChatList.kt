@@ -75,9 +75,9 @@ fun ChatListPage(navController: NavController) {
             itemsIndexed(List(10) { "" }) { index, tmp ->
                 ChatBox(
                     navController = navController,
-                    photoUrl = "https://cdn.mos.cms.futurecdn.net/2aipAM72aBPS7Ny4L2MeNn-1200-80.jpg",
-                    username = "Hu Tao",
-                    lastMessage = "Halo, Namaku Hu Tao!"
+                    photoUrl = "https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fdefault_profile_picture.png?alt=media&token=0135a63e-af90-4c35-8109-d48a9efaf3be",
+                    username = "Pak Tani",
+                    lastMessage = "Masih belum panen"
                 )
             }
         }

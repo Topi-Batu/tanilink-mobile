@@ -58,8 +58,8 @@ fun ChatPage(navController: NavController) {
             modifier = Modifier.padding(top = 80.dp, bottom = 80.dp)
         ) {
             items(10) {
-                MessageBubble("hello", "test", true)
-                MessageBubble("hello", "test", false)
+                MessageBubble("Konsumen", "Apakah Beras masih tersedia?", true)
+                MessageBubble("Pak Tani", "Masih belum panen", false)
             }
         }
     }
@@ -81,7 +81,7 @@ private fun TopBar(navController: NavController) {
         // Images
         Spacer(modifier = Modifier.width(12.dp))
         Image(
-            painter = rememberAsyncImagePainter("https://assetsio.reedpopcdn.com/hu-tao-genshin.jpg?width=1200&height=1200&fit=crop&quality=100&format=png&enable=upscale&auto=webp"),
+            painter = rememberAsyncImagePainter("https://firebasestorage.googleapis.com/v0/b/topibatu-2a076.appspot.com/o/assets%2Fdefault_profile_picture.png?alt=media&token=0135a63e-af90-4c35-8109-d48a9efaf3be"),
             contentDescription = "avatar",
             contentScale = ContentScale.Crop,
             modifier = Modifier
@@ -92,7 +92,7 @@ private fun TopBar(navController: NavController) {
 
         // Name
         Spacer(modifier = Modifier.width(16.dp))
-        Text("Hu Tao", fontWeight = FontWeight.Bold, fontSize = 24.sp)
+        Text("Pak Tani", fontWeight = FontWeight.Bold, fontSize = 24.sp)
     }
 }
 

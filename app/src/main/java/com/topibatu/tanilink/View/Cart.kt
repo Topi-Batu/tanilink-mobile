@@ -1,7 +1,9 @@
 package com.topibatu.tanilink.View
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import android.content.res.Resources.Theme
+import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.compose.foundation.border
@@ -60,6 +62,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat.startActivity
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.topibatu.tanilink.Util.Marketplace
@@ -69,6 +72,7 @@ import com.topibatu.tanilink.View.components.TopBar
 import io.grpc.StatusException
 import kotlinx.coroutines.launch
 import marketplace_proto.MarketplaceProto
+import marketplace_proto.MarketplaceProto.OrderStatus
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -151,26 +155,37 @@ fun CartPage(navController: NavController) {
 
                         // Checkout
                         scope.launch {
-                            getCheckoutRes.value = try {
-                                marketPlaceRPC.checkout(productIdList)
-                            } catch (e: StatusException) {
+                            // Check if there isn't any product selected
+                            if(productIdList.isEmpty()){
                                 Toast.makeText(
                                     context,
-                                    "Checkout Failed: ${e.status.description}",
+                                    "Please select at least one product to continue",
                                     Toast.LENGTH_SHORT
                                 ).show()
-                                null
+                            } else {
+                                getCheckoutRes.value = try {
+                                    marketPlaceRPC.checkout(productIdList)
+                                } catch (e: StatusException) {
+                                    Toast.makeText(
+                                        context,
+                                        "Checkout Failed: ${e.status.description}",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    null
+                                }
+
+                                // Navigate to Cart Detail
+                                getCheckoutRes.value?.let {
+                                    Toast.makeText(
+                                        context,
+                                        "Checkout Success",
+                                        Toast.LENGTH_SHORT
+                                    ).show()
+                                    navController.navigate("cart_detail/${it.id}")
+                                }
                             }
 
-                            // Navigate to Cart Detail
-                            getCheckoutRes.value?.let {
-                                Toast.makeText(
-                                    context,
-                                    "Checkout Success",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                                navController.navigate("cart_detail/${it.id}")
-                            }
+
                         }
 
                         // In Invoices Tab
@@ -239,13 +254,29 @@ fun CartPage(navController: NavController) {
                 ) {
                     getInvoiceRes.value?.let {
                         itemsIndexed(it.invoicesList) { index, invoice ->
-                            Column (
-                                modifier = Modifier.padding(vertical = 12.dp)
+                            Column(
+                                modifier = Modifier
+                                    .padding(vertical = 12.dp)
                                     .clickable {
-                                        navController.navigate("cart_detail/${invoice.id}")
+                                        val orderStatus = invoice.ordersList[0].status
+                                        // If Checkout Go to Cart Detail
+                                        if (orderStatus == OrderStatus.CHECKOUT) {
+                                            navController.navigate("cart_detail/${invoice.id}")
+
+                                            // If NeedPayment Go to Xendit
+                                        } else if (orderStatus == OrderStatus.NEEDPAYMENT) {
+                                            val webIntent: Intent =
+                                                Uri
+                                                    .parse("https://xen.to/35tX5AkG")
+                                                    .let { webpage ->
+                                                        Intent(Intent.ACTION_VIEW, webpage)
+                                                    }
+                                            startActivity(context, webIntent, null)
+                                        }
+
                                     }
                             ) {
-                                Text(text = "Invoice #${index+1}")
+                                Text(text = "Invoice #${index + 1}")
                                 Text(text = "Address: ${invoice.ordersList[0].address}")
 
                                 // Loop Orders
@@ -256,7 +287,7 @@ fun CartPage(navController: NavController) {
                                         productList += "${shoppingCartDetail.product.name} @ ${shoppingCartDetail.amount}, "
                                     }
 
-                                    Text(text = "\nOrder #${index+1}")
+                                    Text(text = "\nOrder #${index + 1}")
                                     Text(text = "Product List: \n$productList")
                                     Text(text = "Delivery Price: ${orderDetail.deliveryPrice}")
                                     Text(text = "Total Price: ${orderDetail.totalPrice}")

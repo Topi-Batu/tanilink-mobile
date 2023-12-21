@@ -409,7 +409,7 @@ fun ProfilePage(navController: NavController) {
                     })
                 ) {
                     OutlinedTextField(
-                        value = "Address 1", // TODO: Change this to be dynamic
+                        value = "Address", // TODO: Change this to be dynamic
                         placeholder = { Text("Address") },
                         label = { Text("Address") },
                         enabled = false,

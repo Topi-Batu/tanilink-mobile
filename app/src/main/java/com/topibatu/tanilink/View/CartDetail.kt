@@ -2,35 +2,25 @@ package com.topibatu.tanilink.View
 
 import account_proto.AccountProto
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.widget.Toast
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowForward
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Checkbox
-import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
-import androidx.compose.material3.FloatingActionButton
-import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -44,26 +34,24 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
-import coil.compose.AsyncImage
 import com.topibatu.tanilink.Util.Account
 import com.topibatu.tanilink.Util.Marketplace
-import com.topibatu.tanilink.View.components.BottomBar
 import com.topibatu.tanilink.View.components.ProductItem
 import com.topibatu.tanilink.View.components.TopBar
 import io.grpc.StatusException
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import marketplace_proto.MarketplaceProto
 
 data class Address(
-    var id: String?,
+    var id: String,
     var addressDetail: String
 )
 
@@ -94,7 +82,7 @@ fun CartDetailPage(navController: NavController, invoiceId: String) {
     val getInvoiceRes = remember { mutableStateOf<MarketplaceProto.InvoiceDetail?>(null) }
 
     // Order Notes Var
-    val orderNotes = remember { mutableStateListOf<OrderNotes?>(null) }
+    val orderNotes = remember { mutableStateListOf<OrderNotes>() }
 
     LaunchedEffect(key1 = null) {
         // Get User Profile
@@ -131,7 +119,23 @@ fun CartDetailPage(navController: NavController, invoiceId: String) {
             )
         }
         getAddressRes.value?.let {
-            addressState.value = address[0]
+            // If user doesn't have address, redirect to profile page
+            if(address.count() == 0){
+                Toast.makeText(
+                    context,
+                    "Add Address in Your Profile to Continue Checkout",
+                    Toast.LENGTH_SHORT
+                ).show()
+                scope.launch {
+                    delay(500) // Delay for 0.5 seconds
+                    navController.navigate("profile")
+                }
+
+            // User have address
+            } else {
+                addressState.value = address[0]
+            }
+
         }
 
         // Get Invoices
@@ -222,7 +226,7 @@ fun CartDetailPage(navController: NavController, invoiceId: String) {
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(LocalConfiguration.current.screenHeightDp.dp / 1.85f)
+                        .height(LocalConfiguration.current.screenHeightDp.dp / 2f)
                         .padding(start = 8.dp, end = 8.dp)
                 ) {
                     it.ordersList.forEach { orderDetail ->
@@ -258,7 +262,31 @@ fun CartDetailPage(navController: NavController, invoiceId: String) {
                 Button(
                     modifier = Modifier.align(Alignment.CenterHorizontally),
                     onClick = {
-                        /* TODO: PlaceOrder */
+                        /* Place Order */
+                        scope.launch {
+                            try {
+                                marketPlaceRPC.placeOrder(
+                                    invoiceId = it.id,
+                                    addressId = addressState.value!!.id,
+                                    orderNotes = orderNotes.toList()
+                                )
+                                Toast.makeText(
+                                    context,
+                                    "Place Order Success",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                val webIntent: Intent = Uri.parse("https://xen.to/35tX5AkG").let { webpage ->
+                                    Intent(Intent.ACTION_VIEW, webpage)
+                                }
+                                ContextCompat.startActivity(context, webIntent, null)
+                            } catch (e: StatusException) {
+                                Toast.makeText(
+                                    context,
+                                    "Place Order Failed: ${e.status.description}",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                            }
+                        }
                     }
                 ) {
                     Text(text = "Bayar")

@@ -1,7 +1,5 @@
 package com.topibatu.tanilink.Util
 
-import account_proto.AccountProto
-import account_proto.AccountsGrpcKt
 import android.net.Uri
 import com.google.protobuf.Empty
 import com.orhanobut.hawk.Hawk
@@ -14,7 +12,6 @@ import marketplace_proto.MarketplaceProto
 import marketplace_proto.MarketplaceProto.AllCommodityDetails
 import marketplace_proto.MarketplaceProto.AllProductDetails
 import marketplace_proto.MarketplaceProto.IdReq
-import marketplace_proto.MarketplaceProto.ShoppingCartDetail
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
 
