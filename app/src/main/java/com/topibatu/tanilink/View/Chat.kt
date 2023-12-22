@@ -22,11 +22,14 @@ import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Send
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -74,9 +77,11 @@ private fun TopBar(navController: NavController) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         // back Icon
-        Icon(Icons.Filled.ArrowBack, "Back", modifier = Modifier.size(38.dp).clickable {
-            navController.popBackStack()
-        })
+        Icon(Icons.Filled.ArrowBack, "Back", modifier = Modifier
+            .size(38.dp)
+            .clickable {
+                navController.popBackStack()
+            })
 
         // Images
         Spacer(modifier = Modifier.width(12.dp))
@@ -99,6 +104,8 @@ private fun TopBar(navController: NavController) {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun BottomBar() {
+    val message = remember { mutableStateOf("") }
+
     Row(
         modifier = Modifier
             .padding(all = 16.dp)
@@ -106,13 +113,20 @@ private fun BottomBar() {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         OutlinedTextField(
-            value = "Pesan",
-            onValueChange = {},
+            value = message.value,
+            onValueChange = { message.value = it },
+            placeholder = { Text("Pesan") },
+            label = { Text("Pesan") },
             shape = RoundedCornerShape(32.dp),
             modifier = Modifier.weight(1f)
         )
         Spacer(modifier = Modifier.width(16.dp))
-        Icon(imageVector = Icons.Filled.Send, contentDescription = "Send Message", modifier = Modifier.size(38.dp).clickable {  })
+        Icon(imageVector = Icons.Filled.Send, contentDescription = "Send Message", modifier = Modifier
+            .size(38.dp)
+            .clickable {
+                /* TODO: Send Message */
+                message.value = ""
+            })
     }
 }
 

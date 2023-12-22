@@ -3,6 +3,8 @@ package com.topibatu.tanilink.View
 import account_proto.AccountProto
 import android.Manifest
 import android.annotation.SuppressLint
+import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import android.widget.Toast
 import androidx.annotation.RequiresApi
@@ -66,6 +68,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.core.content.ContextCompat
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
@@ -162,6 +165,10 @@ fun HomePage(navController: NavController) {
                         "Redirecting to Seller Page ...",
                         Toast.LENGTH_SHORT
                     ).show()
+                    val webIntent: Intent = Uri.parse("https://tanilink.bantuin.me/Dashboard").let { webpage ->
+                        Intent(Intent.ACTION_VIEW, webpage)
+                    }
+                    ContextCompat.startActivity(context, webIntent, null)
                 }
             ) {
                 Icon(Icons.Filled.Add, "Add Product")
